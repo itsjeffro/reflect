@@ -35,6 +35,7 @@ function App() {
   }, [searchParams]);
 
   const [selectedDate, setSelectedDate] = useState<string>(format(date, 'y-MM-dd'));
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
   const formUpdate = useForm<EntryRequest>();
 
@@ -51,7 +52,10 @@ function App() {
   });
 
   const { mutate: updateEntry, isPending, isSuccess } = useUpdateEntryById({
-    onSuccess: (data) => formUpdate.reset(data as EntryRequest),
+    onSuccess: (data) => {
+      formUpdate.reset(data as EntryRequest);
+      setUpdatedAt(data.updated_at);
+    },
     onError: (error) => alert(JSON.stringify(error)),
   });
 
@@ -116,7 +120,7 @@ function App() {
     if (entry) {
       formUpdate.reset(entry as EntryRequest);
     }
-  }, [entry, formUpdate, selectedDate])
+  }, [entry, formUpdate, selectedDate]);
 
   return (
     <Flex direction="row" height="100%" display="flex">
@@ -147,8 +151,12 @@ function App() {
           <Box style={{ padding: '1rem' }}>
             <Flex align="center" justify="between">
               <Text>{heading}</Text>
+
               {isPending && <Badge color="orange">Saving...</Badge>}
-              {(!isPending && isSuccess) && <Badge color="green">Saved!</Badge>}
+
+              {(!isPending && isSuccess && updatedAt) && (
+                <Badge color="green">Last modified {format(updatedAt, 'y-MM-dd hh:mm:ss')}</Badge>
+              )}
             </Flex>
           </Box>
         </Heading>
@@ -166,11 +174,15 @@ function App() {
             </Section>
           )}
 
-          {(!isPending && !entry) && (
-            <EmptyPlaceholder>
+          <EmptyPlaceholder>
+            {(!isEntriesPending && !entry) && (
               <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
-            </EmptyPlaceholder>
-          )}
+            )}
+
+            {isEntriesPending && (
+              <Text>Loading...</Text>
+            )}
+          </EmptyPlaceholder>
 
           <EntriesList>
             <EntryList

@@ -16,7 +16,7 @@ export const EntryList = ({ entries, isLoading, onDeleteClick }: EntryListProps)
         <Text weight="bold">Entries</Text>
       </EntryListHeading>
       {!isLoading && entries.map((entry) => (
-        <EntryListItem>
+        <EntryListItem key={entry.id}>
           <Text size="2">{entry.title ?? `Entry #${entry.id} - ${format(entry.published_at, 'hh:mm aa')}`}</Text>
           <Button size="1" color="red" onClick={() => onDeleteClick?.(entry.id)}>X</Button>
         </EntryListItem>
