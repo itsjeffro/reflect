@@ -1,0 +1,52 @@
+'use client'
+
+import '@mdxeditor/editor/style.css'
+
+import { BoldItalicUnderlineToggles, CreateLink, headingsPlugin, linkDialogPlugin, linkPlugin, listsPlugin, ListsToggle, markdownShortcutPlugin, MDXEditor, toolbarPlugin, type MDXEditorMethods } from '@mdxeditor/editor'
+import { useEffect, useRef } from 'react';
+
+type EditorProps = {
+  value?: string;
+  onChange: () => void;
+};
+
+/**
+ * NOTE to self
+ * - The markdownShortcutPlugin needs to be after markdown plugins for the auto convert to work during plain text typing.
+ */
+export const Editor = ({ value = '', onChange, ...props }: EditorProps) => {
+  const markdownRef = useRef<MDXEditorMethods>(null)
+
+  useEffect(() => {
+    markdownRef.current?.setMarkdown(value ?? '')
+  }, [value]);
+
+  return (
+    <MDXEditor
+      {...props}
+      markdown={value}
+      ref={markdownRef}
+      onChange={onChange}
+      className='editor'
+      contentEditableClassName="editor__content-editable"
+      plugins={[
+        listsPlugin(),
+        linkDialogPlugin(),
+        headingsPlugin(),
+        linkPlugin(),
+        linkDialogPlugin(),
+        markdownShortcutPlugin(),
+        toolbarPlugin({
+          toolbarClassName: 'editor_toolbar',
+          toolbarContents: () => (
+            <>
+              <BoldItalicUnderlineToggles />
+              <ListsToggle />
+              <CreateLink />
+            </>
+          )
+        })
+      ]}
+    />
+  )
+}
