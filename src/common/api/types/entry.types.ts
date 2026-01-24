@@ -4,7 +4,7 @@ export type EntryRequest = {
   published_at: string;
 }
 
-export type EntryResponse = {
+export type EntryModel = {
   id: number;
   title: string | null;
   content: string | null;

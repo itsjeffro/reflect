@@ -2,7 +2,7 @@ import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
 import { throwError, type ValidationError } from './helpers';
 import { useHttpClient } from '../hooks/useHttpClient';
 import { timezone } from '../utils/date';
-import type { EntryRequest, EntryResponse } from './types/entry.types';
+import type { EntryRequest, EntryModel } from './types/entry.types';
 
 type Error = {
   response: ValidationError;
@@ -13,7 +13,7 @@ type Request = {
   payload: EntryRequest;
 }
 
-type Response = EntryResponse;
+type Response = EntryModel;
 
 export const useUpdateEntryById = (mutate?: Partial<UseMutationOptions<Response, Error, Request>>) => {
   const { httpClient } = useHttpClient();

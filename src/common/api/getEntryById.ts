@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHttpClient } from "../hooks/useHttpClient";
-import type { EntryResponse } from "./types/entry.types";
+import type { EntryModel } from "./types/entry.types";
 
-type Response = EntryResponse;
+type Response = EntryModel;
 
 export const useGetEntryById = ({ id }: { id: string | number }) => {
   const { httpClient } = useHttpClient();

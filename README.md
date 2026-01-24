@@ -1,3 +1,7 @@
 # Reflect
 
-TBD
+```bash
+pnpm install
+
+pnpm dev
+```

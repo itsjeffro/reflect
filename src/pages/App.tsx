@@ -1,6 +1,6 @@
-import { Badge, Button, Container, Flex, Grid, Heading, ScrollArea, Text } from "@radix-ui/themes"
+import { Badge, Flex, Grid, ScrollArea, Text, Box, Button } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, isToday } from "date-fns";
 import { useCreateEntry } from "../common/api/createEntry";
 import { Controller, useForm } from "react-hook-form";
@@ -12,12 +12,16 @@ import { useUpdateEntryById } from "../common/api/updateEntryById";
 import { useAutoSave } from "../common/hooks/useAutoSave";
 import { Editor } from "../common/components/Editor";
 import { useSearchParams } from "react-router";
+import { EntryList } from "../common/components/EntryList";
+import type { MDXEditorMethods } from "@mdxeditor/editor";
+import { useDeleteEntryById } from "../common/api/deleteEntryById";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 ];
 
 function App() {
+  const editorRef = useRef<MDXEditorMethods | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const date = useMemo(() => {
@@ -41,12 +45,21 @@ function App() {
     onSuccess: (data) => {
       refetch();
       formUpdate.reset(data as EntryRequest);
+      editorRef.current?.focus();
     },
     onError: (error) => alert(JSON.stringify(error)),
   });
 
   const { mutate: updateEntry, isPending, isSuccess } = useUpdateEntryById({
     onSuccess: (data) => formUpdate.reset(data as EntryRequest),
+    onError: (error) => alert(JSON.stringify(error)),
+  });
+
+  const { mutate: deleteEntry } = useDeleteEntryById({
+    onSuccess: () => {
+      refetch();
+      alert('Deleted');
+    },
     onError: (error) => alert(JSON.stringify(error)),
   });
 
@@ -82,6 +95,10 @@ function App() {
     createEntry({ content: '', published_at: selectedDate });
   }, [createEntry, selectedDate]);
 
+  const handleDeleteClick = useCallback((id: number) => {
+    deleteEntry({ id });
+  }, [deleteEntry])
+
   const heading = useMemo(() => {
     if (isToday(selectedDate)) {
       return 'Today';
@@ -105,9 +122,9 @@ function App() {
     <Flex direction="row" height="100%" display="flex">
       <ScrollArea scrollbars="vertical" style={{ height: '100%' }} asChild>
         <Sidebar>
-          <Content>
+          <SidebarPadding>
             <Flex direction="column" gap="2">
-              <Heading as="h2" size="4">2026</Heading>
+              <Text size="4">2026</Text>
               <Grid columns="1fr" gap="5">
                 {MONTHS.map((month) => (
                   <CalendarMonth
@@ -121,48 +138,58 @@ function App() {
                 ))}
               </Grid>
             </Flex>
-          </Content>
+          </SidebarPadding>
         </Sidebar>
       </ScrollArea>
 
       <Main>
-        <Container maxWidth="1300px">
-          <Content>
-            <Flex direction="column" gap="4">
-              <Flex align="center" justify="between">
-                <Heading as="h2" size="4">{heading}</Heading>
-                {isPending && <Badge color="orange">Saving...</Badge>}
-                {(!isPending && isSuccess) && <Badge color="green">Saved!</Badge>}
-              </Flex>
-
-              {isEntriesPending && (
-                <Text size="2">Loading entry...</Text>
-              )}
-
-              {(!!entry) && (
-                <Controller
-                  control={formUpdate.control}
-                  name="content"
-                  render={({ field }) => (
-                    <Editor value={field.value ?? ''} onChange={field.onChange} />
-                  )}
-                />
-              )}
-
-              {(!isEntriesPending && !entry) && (
-                <Flex align="center" gap="2">
-                  <Text>No entries yet.</Text> <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
-                </Flex>
-              )}
+        <Heading>
+          <Box style={{ padding: '1rem' }}>
+            <Flex align="center" justify="between">
+              <Text>{heading}</Text>
+              {isPending && <Badge color="orange">Saving...</Badge>}
+              {(!isPending && isSuccess) && <Badge color="green">Saved!</Badge>}
             </Flex>
-          </Content>
-        </Container>
+          </Box>
+        </Heading>
+
+        <Content>
+          {(!!entry) && (
+            <Section>
+              <Controller
+                control={formUpdate.control}
+                name="content"
+                render={({ field }) => (
+                  <Editor value={field.value ?? ''} onChange={field.onChange} ref={editorRef} />
+                )}
+              />
+            </Section>
+          )}
+
+          {(!isPending && !entry) && (
+            <EmptyPlaceholder>
+              <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
+            </EmptyPlaceholder>
+          )}
+
+          <EntriesList>
+            <EntryList
+              entries={entries ?? []}
+              isLoading={isEntriesPending}
+              onDeleteClick={handleDeleteClick}
+            />
+          </EntriesList>
+        </Content>
       </Main>
     </Flex>
   )
 }
 
-export default App
+export default App;
+
+const SidebarPadding = styled.div({
+  padding: '1rem',
+});
 
 const Sidebar = styled.aside({
   boxShadow: 'inset -1px 0 1px -1px rgba(0, 0, 0, .40);',
@@ -172,10 +199,40 @@ const Sidebar = styled.aside({
 });
 
 const Main = styled.main({
-  flexGrow: '1',
-  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+});
+
+const Heading = styled.div({
+  flex: '0 0 auto',
 });
 
 const Content = styled.div({
-  padding: '1rem',
+  flex: 1,
+  minHeight: 0,
+  overflow: 'auto',
+  display: 'flex',
+});
+
+const EntriesList = styled.div({
+  width: '300px',
+  flexShrink: 0,
+  padding: '0 1rem 1rem 0',
+});
+
+const Section = styled.div({
+  width: '100%',
+  padding: '0 1rem 1rem',
+});
+
+const EmptyPlaceholder = styled.div({
+  width: '100%',
+  flex: 1,
+  minHeight: 0,
+  overflow: 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });

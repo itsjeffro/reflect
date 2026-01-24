@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHttpClient } from "../hooks/useHttpClient";
-import type { EntryResponse } from "./types/entry.types";
+import type { EntryModel } from "./types/entry.types";
 
-type Response = EntryResponse[];
+type Response = EntryModel[];
 
 type Params = {
   published_at?: string | null;
