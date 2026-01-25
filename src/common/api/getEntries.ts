@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHttpClient } from "../hooks/useHttpClient";
 import type { EntryModel } from "./types/entry.types";
+import { timezone } from "../utils/date";
 
 type Response = EntryModel[];
 
@@ -16,7 +17,10 @@ export const useGetEntries = (params: Params) => {
     queryFn: () => {
       return httpClient
         .get('/api/entries', {
-          params
+          params,
+          headers: {
+            'Time-Zone': timezone(),
+          }
         })
         .then((response) => response.data);
     },

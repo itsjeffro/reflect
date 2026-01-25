@@ -1,7 +1,7 @@
 import { Badge, Flex, Grid, ScrollArea, Text, Box, Button } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { format, isToday } from "date-fns";
+import { format, isToday, parse, set } from "date-fns";
 import { useCreateEntry } from "../common/api/createEntry";
 import { Controller, useForm } from "react-hook-form";
 import type { EntryRequest } from "../common/api/types/entry.types";
@@ -96,7 +96,17 @@ function App() {
   }, [updateEntry, entry]);
 
   const handleCreateClick = useCallback(() => {
-    createEntry({ content: '', published_at: selectedDate });
+    const now = new Date();
+
+    let publishedAt = parse(selectedDate, 'y-MM-dd', Date.now());
+
+    publishedAt = set(publishedAt, {
+      hours: now.getHours(),
+      minutes: now.getMinutes(),
+      seconds: now.getSeconds(),
+    });
+
+    createEntry({ content: '', published_at: format(publishedAt, 'y-MM-dd hh:mm:ss') });
   }, [createEntry, selectedDate]);
 
   const handleDeleteClick = useCallback((id: number) => {
