@@ -91,9 +91,9 @@ const DateBlock = styled(Flex, {
     background: '#f5f5f5',
   },
   ...(hasEvents && {
-    background: '#f5f5f5',
+    background: '#eceaea',
     '&:hover': {
-      background: '#e8e6e6'
+      background: '#e2e1e1'
     }
   }),
   ...(isToday && {
