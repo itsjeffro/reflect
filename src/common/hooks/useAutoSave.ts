@@ -1,29 +1,27 @@
-import { useEffect } from "react"
-import type { FieldValues, UseFormReturn } from "react-hook-form"
+import { useDeepCompareEffect } from "ahooks"
+import { useWatch, type DeepPartialSkipArrayKey, type FieldValues, type UseFormReturn } from "react-hook-form"
 import { useDebouncedCallback } from "use-debounce"
 
 type AutoSaveProps<T extends FieldValues> = {
-  delay?: number
   form: UseFormReturn<T>
   onSave: (data: T) => void | Promise<void>
+  defaultValues?: DeepPartialSkipArrayKey<T>;
+  delay?: number
 }
 
-export function useAutoSave<T extends FieldValues>({ delay = 1000, form, onSave }: AutoSaveProps<T>) {
-  const {watch, formState: {isDirty, dirtyFields }} = form;
+export function useAutoSave<T extends FieldValues>({ defaultValues, form, onSave, delay = 1000 }: AutoSaveProps<T>) {
+  const watchedData = useWatch({
+    control: form.control,
+    defaultValue: defaultValues,
+  });
 
-  const debounce = useDebouncedCallback(async (values) => {
-    onSave(values)
+  const debounce = useDebouncedCallback(() => {
+    form.handleSubmit(onSave)();
   }, delay);
 
-  useEffect(() => {
-    const subscription = watch((values) => {
-      if (isDirty || Object.keys(dirtyFields).length > 0) {
-        debounce(values);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [isDirty, watch, debounce, dirtyFields]);
+  useDeepCompareEffect(() => {
+    if (form.formState.isDirty) {
+      debounce();
+    }
+  }, [watchedData, form]);
 };
