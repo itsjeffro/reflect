@@ -1,7 +1,6 @@
-import { useSystemColorScheme } from "@/app/_common/hooks/useSystemColorScheme";
 import { useState, type FC, type ReactNode } from "react";
 import { AuthContext, type UserType } from "./AuthContext";
-import { getTokenFromCookie } from "@/app/_common/lib/cookie";
+import { getTokenFromCookie } from "../../utils/cookie";
 
 type AuthProviderType = {
   children: ReactNode;
@@ -10,8 +9,6 @@ type AuthProviderType = {
 export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
   const [user, setUser] = useState<UserType>({ email: null, name: null });
   const [token, setToken] = useState<string | null>(null);
-
-  useSystemColorScheme();
 
   const cookieToken = getTokenFromCookie();
 

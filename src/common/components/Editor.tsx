@@ -20,7 +20,7 @@ export const Editor = ({ value = '', ref, onChange, ...props }: EditorProps) => 
   const markdownRef = useRef<MDXEditorMethods>(null)
 
   useEffect(() => {
-    markdownRef.current?.setMarkdown(value ?? '')
+    markdownRef.current?.setMarkdown(value ?? '');
   }, [value]);
 
   return (
@@ -39,7 +39,7 @@ export const Editor = ({ value = '', ref, onChange, ...props }: EditorProps) => 
         linkDialogPlugin(),
         markdownShortcutPlugin(),
         toolbarPlugin({
-          toolbarClassName: 'editor_toolbar',
+          toolbarClassName: 'editor__toolbar',
           toolbarContents: () => (
             <>
               <BoldItalicUnderlineToggles />

@@ -9,11 +9,16 @@ import Login from './pages/Login.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Global } from '@emotion/react';
 import { globalStyles } from './styles.ts';
+import { Layout } from './Layout.tsx';
+import { AuthProvider } from './common/context/auth/AuthProvider.tsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    Component: App,
+    Component: Layout,
+    children: [
+      { path: '/', Component: App },
+    ]
   },
   {
     path: '/login',
@@ -28,7 +33,9 @@ createRoot(document.getElementById('root')!).render(
     <Global styles={globalStyles} />
     <QueryClientProvider client={queryClient}>
       <Theme>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </Theme>
     </QueryClientProvider>
   </StrictMode>,

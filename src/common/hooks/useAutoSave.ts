@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import type { FieldValues, UseFormReturn } from "react-hook-form"
+import { useDebouncedCallback } from "use-debounce"
 
 type AutoSaveProps<T extends FieldValues> = {
   delay?: number
@@ -8,39 +9,21 @@ type AutoSaveProps<T extends FieldValues> = {
 }
 
 export function useAutoSave<T extends FieldValues>({ delay = 1000, form, onSave }: AutoSaveProps<T>) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const {watch, formState: {isDirty, dirtyFields }} = form;
+
+  const debounce = useDebouncedCallback(async (values) => {
+    onSave(values)
+  }, delay);
 
   useEffect(() => {
-    const subscription = form.watch(() => {
-      if (timer.current) {
-        clearTimeout(timer.current)
+    const subscription = watch((values) => {
+      if (isDirty || Object.keys(dirtyFields).length > 0) {
+        debounce(values);
       }
-
-      timer.current = setTimeout(() => {
-        const { isDirty, dirtyFields } = form.formState
-
-        const hasNoChanges = !isDirty || Object.keys(dirtyFields).length === 0
-
-        if (hasNoChanges) {
-          return
-        }
-
-        onSave(form.getValues())
-      }, delay)
-    })
+    });
 
     return () => {
       subscription.unsubscribe();
-
-      if (timer.current) {
-        clearTimeout(timer.current)
-      }
-    }
-  }, [
-    delay,
-    onSave,
-    form,
-    form.formState.isDirty,
-    form.formState.dirtyFields,
-  ])
+    };
+  }, [isDirty, watch, debounce, dirtyFields]);
 };

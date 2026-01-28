@@ -1,10 +1,10 @@
-import { Badge, Flex, Grid, ScrollArea, Text, Box, Button } from "@radix-ui/themes"
+import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, isToday, parse, set } from "date-fns";
 import { useCreateEntry } from "../common/api/createEntry";
-import { Controller, useForm } from "react-hook-form";
-import type { EntryRequest } from "../common/api/types/entry.types";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import type { EntryModel, EntryRequest } from "../common/api/types/entry.types";
 import { useGetEntriesByCalendarYear } from "../common/api/getEntriesByCalendarYear";
 import { useGetEntries } from "../common/api/getEntries";
 import styled from "@emotion/styled";
@@ -15,6 +15,8 @@ import { useSearchParams } from "react-router";
 import { EntryList } from "../common/components/EntryList";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
+import { useAuth } from "../common/context/auth/useAuth";
+import { initials } from "../common/utils/avatar";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -23,6 +25,7 @@ const MONTHS = [
 function App() {
   const editorRef = useRef<MDXEditorMethods | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
 
   const date = useMemo(() => {
     const selectedDate = searchParams.get('date');
@@ -35,7 +38,7 @@ function App() {
   }, [searchParams]);
 
   const [selectedDate, setSelectedDate] = useState<string>(format(date, 'y-MM-dd'));
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const formUpdate = useForm<EntryRequest>();
 
@@ -51,34 +54,42 @@ function App() {
     onError: (error) => alert(JSON.stringify(error)),
   });
 
-  const { mutate: updateEntry, isPending, isSuccess } = useUpdateEntryById({
-    onSuccess: (data) => {
-      formUpdate.reset(data as EntryRequest);
-      setUpdatedAt(data.updated_at);
-    },
+  const { mutate: updateEntry, isPending } = useUpdateEntryById({
+    onSuccess: (data) => formUpdate.reset(data as EntryRequest),
     onError: (error) => alert(JSON.stringify(error)),
   });
 
   const { mutate: deleteEntry } = useDeleteEntryById({
     onSuccess: () => {
       refetch();
-      alert('Deleted');
+      editorRef.current?.focus();
     },
     onError: (error) => alert(JSON.stringify(error)),
   });
+
+  const entryId = useMemo(() => {
+    if (selectedId) {
+      return selectedId;
+    }
+    if (!entries?.[0]) {
+      return null;
+    }
+    return entries?.[0].id;
+  }, [entries, selectedId]);
 
   const entry = useMemo(() => {
     if (!entries?.[0]) {
       return null;
     }
-    return entries?.[0]
-  }, [entries]);
+    return entries?.find(entry => entry.id === entryId) ?? null;
+  }, [entries, entryId]);
 
   const handleDateClick = useCallback((selectedDate: Date) => {
     const formattedDate = format(selectedDate, 'y-MM-dd')
 
     setSelectedDate(formattedDate);
     setSearchParams({ date: formattedDate });
+    setSelectedId(null);
 
     formUpdate.reset({ content: '' });
   }, [formUpdate, setSearchParams]);
@@ -113,13 +124,19 @@ function App() {
     deleteEntry({ id });
   }, [deleteEntry])
 
+  const handleItemClick = useCallback((row: EntryModel) => {
+    setSelectedId(row.id);
+  }, [])
+
   const heading = useMemo(() => {
     if (isToday(selectedDate)) {
       return 'Today';
     }
 
     return format(selectedDate, 'dd MMMM y');
-  }, [selectedDate])
+  }, [selectedDate]);
+
+  const updatedAt = useWatch({ control: formUpdate.control, name: 'updated_at' });
 
   useAutoSave({
     form: formUpdate,
@@ -129,6 +146,7 @@ function App() {
   useEffect(() => {
     if (entry) {
       formUpdate.reset(entry as EntryRequest);
+      editorRef.current?.focus();
     }
   }, [entry, formUpdate, selectedDate]);
 
@@ -162,43 +180,51 @@ function App() {
             <Flex align="center" justify="between">
               <Text>{heading}</Text>
 
-              {isPending && <Badge color="orange">Saving...</Badge>}
+              <Flex gap="2" align="center">
+                {isPending && <Badge color="orange">Saving...</Badge>}
 
-              {(!isPending && isSuccess && updatedAt) && (
-                <Badge color="green">Last modified {format(updatedAt, 'y-MM-dd hh:mm:ss')}</Badge>
-              )}
+                {(!isPending && updatedAt) && (
+                  <Badge color="green">Updated at {format(updatedAt, 'y-MM-dd hh:mm:ss')}</Badge>
+                )}
+
+                <Avatar size="1" fallback={initials(user.name) ?? ''} radius="full" />
+              </Flex>
             </Flex>
           </Box>
         </Heading>
 
         <Content>
-          {(!!entry) && (
-            <Section>
-              <Controller
-                control={formUpdate.control}
-                name="content"
-                render={({ field }) => (
-                  <Editor value={field.value ?? ''} onChange={field.onChange} ref={editorRef} />
-                )}
-              />
-            </Section>
-          )}
-
-          <EmptyPlaceholder>
-            {(!isEntriesPending && !entry) && (
-              <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
+          <Content>
+            {(!!entry) && (
+              <Section>
+                <Controller
+                  control={formUpdate.control}
+                  name="content"
+                  render={({ field }) => (
+                    <Editor value={field.value ?? ''} onChange={field.onChange} ref={editorRef} />
+                  )}
+                />
+              </Section>
             )}
 
-            {isEntriesPending && (
-              <Text>Loading...</Text>
-            )}
-          </EmptyPlaceholder>
+            <EmptyPlaceholder>
+              {(!isEntriesPending && !entry) && (
+                <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
+              )}
+
+              {isEntriesPending && (
+                <Text>Loading...</Text>
+              )}
+            </EmptyPlaceholder>
+          </Content>
 
           <EntriesList>
             <EntryList
               entries={entries ?? []}
               isLoading={isEntriesPending}
+              selected={(row) => entryId === row.id}
               onDeleteClick={handleDeleteClick}
+              onItemClick={handleItemClick}
             />
           </EntriesList>
         </Content>
@@ -214,7 +240,7 @@ const SidebarPadding = styled.div({
 });
 
 const Sidebar = styled.aside({
-  boxShadow: 'inset -1px 0 1px -1px rgba(0, 0, 0, .40);',
+  borderRight: '1px solid rgba(0, 0, 0, .12)',
   overflowY: 'hidden',
   width: '300px',
   flexShrink: 0,

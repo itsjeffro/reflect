@@ -16,6 +16,10 @@ export const globalStyles = css`
     padding: 0;
   }
 
+  :root {
+    --border: #d8d8d8;
+  }
+
   #root {
     display: flex;
     height: 100%;
@@ -31,6 +35,10 @@ export const globalStyles = css`
       padding-right: 0;
     }
 
+    &__toolbar > div {
+      margin: 0;
+    }
+
     ul {
       padding: 0 0 0 1rem;
       margin: 0;
@@ -39,6 +47,14 @@ export const globalStyles = css`
 
     p, li {
       margin-top: 0;
+    }
+  }
+
+  .editor__toolbar button {
+    height: 28px;
+
+    svg {
+      height: 16px !important;
     }
   }
 `;
