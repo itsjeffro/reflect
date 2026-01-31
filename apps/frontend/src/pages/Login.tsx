@@ -23,7 +23,7 @@ const initialData: LoginRequest = {
 
 function Login() {
   const [errors, setErrors] = useState<Error | null>(null);
-  const [passwordInputType, setPasswordInputType] = useState('password');
+  const [passwordInputType] = useState('password');
   const { setToken } = useAuth();
   const navigate = useNavigate();
 
@@ -34,12 +34,12 @@ function Login() {
     defaultValues: initialData
   });
 
-  const handleInputTypeChange = useCallback(() => {
-    console.log('test')
-    setPasswordInputType((prevState) => {
-      return prevState === 'password' ? 'text' : 'password';
-    })
-  }, [setPasswordInputType])
+  // const handleInputTypeChange = useCallback(() => {
+  //   console.log('test')
+  //   setPasswordInputType((prevState) => {
+  //     return prevState === 'password' ? 'text' : 'password';
+  //   })
+  // }, [setPasswordInputType])
 
   const onSubmit = useCallback(async (data: LoginRequest) => {
     const { remember, ...rest } = data;

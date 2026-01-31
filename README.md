@@ -1,7 +1,6 @@
 # Reflect
 
-```bash
-pnpm install
+## Apps
 
-pnpm dev
-```
+- Frontend
+- Electron application
