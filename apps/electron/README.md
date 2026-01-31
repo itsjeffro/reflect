@@ -1,0 +1,27 @@
+# Electron (Reflect)
+
+## Getting started
+
+```bash
+pnpm install
+```
+
+### Running with Vite server
+
+A Vite server will be start during the Forge preStart hook for Electron to wrap.
+
+```bash
+pnpm dev
+```
+
+### Running a bundled Vite dist
+
+Runs the Electron app using a recent Vite build.
+
+```bash
+pnpm start
+```
+
+## Building
+
+[See docs](https://www.electronforge.io/#building-distributables)
