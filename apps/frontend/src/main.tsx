@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import "@radix-ui/themes/styles.css";
 import { Theme } from '@radix-ui/themes';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createHashRouter, RouterProvider } from 'react-router';
 
 import App from './pages/App.tsx'
 import Login from './pages/Login.tsx'
@@ -12,7 +12,7 @@ import { globalStyles } from './styles.ts';
 import { Layout } from './Layout.tsx';
 import { AuthProvider } from './common/context/auth/AuthProvider.tsx';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     Component: Layout,
