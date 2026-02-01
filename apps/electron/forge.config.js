@@ -1,7 +1,12 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
-const { spawn } = require('child_process');
 const path = require('path');
+const { spawn, exec } = require('child_process');
+const { promisify } = require('util');
+const { cp } = require('fs/promises');
+
+const FRONTEND_PATH = '../frontend';
+const execAsync = promisify(exec);
 
 module.exports = {
   packagerConfig: {
@@ -56,7 +61,7 @@ module.exports = {
       let viteProcess = null;
 
       const startServer = new Promise((resolve, reject) => {
-        const viteProjectDir = path.resolve(__dirname, '../frontend');
+        const viteProjectDir = path.resolve(__dirname, FRONTEND_PATH);
 
         viteProcess = spawn('pnpm', ['dev'], {
           cwd: viteProjectDir,
@@ -80,8 +85,23 @@ module.exports = {
         }, 30000);
       });
 
-
       await startServer;
+    },
+     generateAssets: async () => {
+      const isDev = process.env.NODE_ENV === 'development';
+
+      if (isDev) {
+        console.log(`Skipping generateAssets hook.`);
+
+        return;
+      }
+
+      await execAsync('cd ../frontend && pnpm build');
+
+      const src = path.join(__dirname, FRONTEND_PATH, 'dist');
+      const dest = path.join(__dirname, 'renderer');
+
+      await cp(src, dest, { recursive: true, force: true });
     }
   }
 };

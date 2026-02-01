@@ -8,7 +8,7 @@ pnpm install
 
 ### Running with Vite server
 
-A Vite server will be start during the Forge preStart hook for Electron to wrap.
+A Vite server will be started during the Forge preStart hook for Electron to wrap.
 
 ```bash
 pnpm dev
