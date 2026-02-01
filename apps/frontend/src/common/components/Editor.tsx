@@ -1,10 +1,13 @@
 'use client'
 
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
 import '@mdxeditor/editor/style.css'
-
 import { BoldItalicUnderlineToggles, CreateLink, headingsPlugin, linkDialogPlugin, linkPlugin, listsPlugin, ListsToggle, markdownShortcutPlugin, MDXEditor, toolbarPlugin, type MDXEditorMethods } from '@mdxeditor/editor'
 import { useEffect, useRef, type Ref } from 'react';
 import { mergeRefs } from '../utils';
+
+window.Prism = Prism;
 
 type EditorProps = {
   value?: string;
