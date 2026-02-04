@@ -66,6 +66,7 @@ typings/
 
 # build output
 renderer
+.webpack
 
 # FuseBox cache
 .fusebox/

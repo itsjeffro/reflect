@@ -3,10 +3,10 @@
   "productName": "electron",
   "version": "1.0.0",
   "description": "My Electron application description",
-  "main": "src/index.js",
+  "main": "./.webpack/main",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development electron-forge start",
+    "dev": "VITE_SERVER=development electron-forge start",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -20,7 +20,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^11.0.2"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
@@ -30,7 +31,13 @@
     "@electron-forge/maker-zip": "^7.11.1",
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
     "@electron-forge/plugin-fuses": "^7.11.1",
+    "@electron-forge/plugin-webpack": "^7.11.1",
     "@electron/fuses": "^1.8.0",
-    "electron": "40.1.0"
+    "@vercel/webpack-asset-relocator-loader": "^1.7.3",
+    "copy-webpack-plugin": "^13.0.1",
+    "electron": "40.1.0",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "~5.9.3"
   }
 }

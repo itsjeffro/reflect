@@ -1,12 +1,21 @@
-const { FusesPlugin } = require('@electron-forge/plugin-fuses');
-const { FuseV1Options, FuseVersion } = require('@electron/fuses');
-const path = require('path');
-const { spawn, exec } = require('child_process');
-const { promisify } = require('util');
-const { cp } = require('fs/promises');
+import MakerDeb from "@electron-forge/maker-deb";
+import MakerRpm from "@electron-forge/maker-rpm";
+import MakerSquirrel from "@electron-forge/maker-squirrel";
+import MakerZIP from "@electron-forge/maker-zip";
+import AutoUnpackNativesPlugin from "@electron-forge/plugin-auto-unpack-natives";
+import { FusesPlugin } from '@electron-forge/plugin-fuses';
+import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { WebpackPlugin } from '@electron-forge/plugin-webpack';
+import path, { join } from 'path';
+import { spawn, exec, ChildProcess } from 'child_process';
+import { promisify } from 'util';
+import { cp } from 'fs/promises';
 
 const FRONTEND_PATH = '../frontend';
 const execAsync = promisify(exec);
+
+import { mainConfig } from './webpack.main.config';
+import { rendererConfig } from './webpack.renderer.config';
 
 module.exports = {
   packagerConfig: {
@@ -14,28 +23,29 @@ module.exports = {
   },
   rebuildConfig: {},
   makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
-    },
-    {
-      name: '@electron-forge/maker-deb',
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {},
-    },
+    new MakerSquirrel({}),
+    new MakerZIP({}, ['darwin']),
+    new MakerRpm({}),
+    new MakerDeb({}),
   ],
   plugins: [
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
+    new AutoUnpackNativesPlugin({}),
+    new WebpackPlugin({
+      mainConfig,
+      renderer: {
+        config: rendererConfig,
+        entryPoints: [
+          {
+            html: './src/index.html',
+            js: './src/renderer.ts',
+            name: 'main_window',
+            preload: {
+              js: './src/preload.ts',
+            },
+          },
+        ],
+      },
+    }),
     // Fuses are used to enable/disable various Electron functionality
     // at package time, before code signing the application
     new FusesPlugin({
@@ -50,7 +60,7 @@ module.exports = {
   ],
   hooks: {
     preStart: async () => {
-      const isDev = process.env.NODE_ENV === 'development';
+      const isDev = process.env.VITE_SERVER;
 
       console.log(`[Vite] Starting up server on platform: ${process.platform}`);
 
@@ -58,9 +68,9 @@ module.exports = {
         return;
       }
 
-      let viteProcess = null;
+      let viteProcess: ChildProcess | null = null;
 
-      const startServer = new Promise((resolve, reject) => {
+      const startServer = new Promise<void>((resolve, reject) => {
         const viteProjectDir = path.resolve(__dirname, FRONTEND_PATH);
 
         viteProcess = spawn('pnpm', ['dev'], {
@@ -78,7 +88,7 @@ module.exports = {
           }
         });
 
-        process.on('exit', () => viteProcess.kill());
+        process.on('exit', () => viteProcess?.kill());
 
         setTimeout(() => {
           reject(new Error('[Vite] Starting up server has timed out!'));
@@ -88,7 +98,7 @@ module.exports = {
       await startServer;
     },
      generateAssets: async () => {
-      const isDev = process.env.NODE_ENV === 'development';
+      const isDev = false;
 
       if (isDev) {
         console.log(`Skipping generateAssets hook.`);
@@ -98,8 +108,8 @@ module.exports = {
 
       await execAsync('cd ../frontend && pnpm build');
 
-      const src = path.join(__dirname, FRONTEND_PATH, 'dist');
-      const dest = path.join(__dirname, 'renderer');
+      const src = path.resolve(__dirname, FRONTEND_PATH, 'dist');
+      const dest = path.resolve(__dirname, 'renderer');
 
       await cp(src, dest, { recursive: true, force: true });
     }
