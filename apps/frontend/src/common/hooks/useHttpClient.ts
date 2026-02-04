@@ -1,19 +1,18 @@
 import axios from 'axios';
-import { getTokenFromCookie } from '../utils/cookie';
+import { useAuth } from '../context/auth/useAuth';
+import { useMemo } from 'react';
 
 export const useHttpClient = () => {
-  const token = getTokenFromCookie();
+  const { token } = useAuth();
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-
-  const httpClient = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    ...config,
-  });
+  const httpClient = useMemo(() => {
+    return axios.create({
+      baseURL: import.meta.env.VITE_API_BASE_URL,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+  }, [token]);
 
   return {
     httpClient,

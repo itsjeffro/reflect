@@ -2,11 +2,10 @@ import styled from '@emotion/styled'
 import { useNavigate } from "react-router";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import { setCookie } from "../common/utils/cookie";
-import { useAuth } from "../common/context/auth/useAuth";
 import { Box, Button, Card, Checkbox, Flex, Heading, Text } from "@radix-ui/themes";
 import { httpClient } from "../common/utils/httpClient";
 import { TextField } from '../common/components/TextField';
+import { useTokenManager } from '../common/hooks/useTokenManager';
 
 type LoginRequest = { email?: string | null, password?: string | null, remember: boolean };
 
@@ -24,41 +23,32 @@ const initialData: LoginRequest = {
 function Login() {
   const [errors, setErrors] = useState<Error | null>(null);
   const [passwordInputType] = useState('password');
-  const { setToken } = useAuth();
+
+  const { storeToken } = useTokenManager();
   const navigate = useNavigate();
 
-  const {
-    handleSubmit,
-    register,
-  } = useForm({
+  const { handleSubmit, register } = useForm({
     defaultValues: initialData
   });
 
-  // const handleInputTypeChange = useCallback(() => {
-  //   console.log('test')
-  //   setPasswordInputType((prevState) => {
-  //     return prevState === 'password' ? 'text' : 'password';
-  //   })
-  // }, [setPasswordInputType])
-
   const onSubmit = useCallback(async (data: LoginRequest) => {
-    const { remember, ...rest } = data;
+    const { ...rest } = data;
 
     await httpClient
       .post('/sanctum/token', {
         ...rest,
-        device_name: 'demo',
+        device_name: window.store ? 'electron' : 'web',
       })
-      .then((response) => {
+      .then(async (response) => {
         const token = response.data;
 
-        setCookie('token', token, remember ? 30 : 1);
-        setToken(token);
+        await storeToken(token);
+
         setErrors(null);
         navigate('/');
       })
       .catch((errors) => setErrors(errors.response.data.errors))
-  }, [setToken, navigate]);
+  }, [storeToken, navigate]);
 
   return (
     <Wrapper>
@@ -112,10 +102,7 @@ function Login() {
           </Flex>
 
           <Flex mt="3" justify="end" gap="3">
-            <Button variant="outline" disabled>
-              Create an account
-            </Button>
-            <Button>Sign in</Button>
+            <Button type="submit">Sign in</Button>
           </Flex>
         </form>
       </Card>
