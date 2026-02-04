@@ -1,19 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useHttpClient } from '../hooks/useHttpClient';
 import { throwError } from './helpers';
 import type { UserModel } from './types/user.types';
 
-type GetUserError = {
+type Error = {
   code: number;
 };
 
 type Response = UserModel;
 
-export const useGetUser = () => {
+export const useGetUser = (options: Partial<UseQueryOptions<Response, Error>>) => {
   const { httpClient } = useHttpClient();
 
-  return useQuery<Response, GetUserError>({
+  return useQuery<Response, Error>({
+    ...options,
     queryKey: ['user'],
     retry: 0,
     queryFn: async () => {
