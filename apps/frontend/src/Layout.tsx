@@ -10,6 +10,10 @@ export const Layout = () => {
   const { setUser, setToken } = useAuth();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
+  const { data: user, isLoading, error, isError } = useGetUser({
+    enabled: !isLoadingAuth,
+  });
+
   useEffect(() => {
     const loadToken = async () => {
       const storedToken = await getToken();
@@ -21,21 +25,17 @@ export const Layout = () => {
     loadToken();
   }, [getToken, setToken]);
 
-  const { data: user, isLoading, error, isError } = useGetUser({
-    enabled: !isLoadingAuth,
-  });
-
   useEffect(() => {
     if (user) {
       setUser({ name: user?.name, email: user?.email });
     }
-  }, [user, setUser]);
 
-  useEffect(() => {
-    if (!isLoadingAuth && isError && Number(error.code) === 401) {
-      navigate('/login')
+    const isUnauthorized = isError && Number(error.code) === 401;
+
+    if (!isLoadingAuth && isUnauthorized) {
+      navigate('/login');
     }
-  }, [error, isError, isLoadingAuth, isLoading, navigate]);
+  }, [error, isError, isLoadingAuth, isLoading, navigate, setUser, user]);
 
   if (isLoading) {
     return <>Loading...</>
