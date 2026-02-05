@@ -17,7 +17,6 @@ export const Layout = () => {
   useEffect(() => {
     const loadToken = async () => {
       const storedToken = await getToken();
-
       setIsLoadingAuth(false);
       setToken(storedToken);
     };

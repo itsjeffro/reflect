@@ -4,7 +4,7 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 
 const isDev = process.env.VITE_SERVER;
-const OUT_DIR = !isDev ? path.join(__dirname, '../../../frontend/dist') : path.join(process.resourcesPath, 'dist');
+const DIST_DIR = isDev ? path.join(process.resourcesPath, 'dist') : path.join(__dirname, '../../../frontend/dist');
 
 type StoreSchema = {
   token: string | null;
@@ -72,7 +72,7 @@ const handleCustomProtocol = () => {
       filePath = filePath.replace('index.html/', '')
     }
 
-    let fullPath = path.join(OUT_DIR, filePath);
+    let fullPath = path.join(DIST_DIR, filePath);
 
     fullPath = pathToFileURL(fullPath).toString();
 
