@@ -4,8 +4,7 @@ import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Box, Button, Card, Checkbox, Flex, Heading, Text } from "@radix-ui/themes";
 import { TextField } from '../common/components/TextField';
-import { useTokenManager } from '../common/hooks/useTokenManager';
-import { useHttpClient } from '../common/hooks/useHttpClient';
+import { useLogin } from '../common/hooks/useLogin';
 
 type LoginRequest = { email?: string | null, password?: string | null, remember: boolean };
 
@@ -23,46 +22,26 @@ const initialData: LoginRequest = {
 function Login() {
   const [errors, setErrors] = useState<Error | null>(null);
   const [passwordInputType] = useState('password');
-  const { httpClient } = useHttpClient();
 
-  const { storeToken } = useTokenManager();
   const navigate = useNavigate();
 
   const { handleSubmit, register } = useForm({
     defaultValues: initialData
   });
 
+  const { handleLogin } = useLogin({
+    onSuccess: () => {
+      navigate('/');
+      setErrors(null);
+    },
+    onError: (response) => {
+      setErrors(response.data.errors)
+    },
+  });
+
   const onSubmit = useCallback(async (data: LoginRequest) => {
-    const { ...rest } = data;
-
-    if (!window.store) {
-      await httpClient.get('/sanctum/csrf-cookie').then(() => {
-        httpClient
-          .post('/login', { ...rest })
-          .then(async () => {
-            setErrors(null);
-            navigate('/');
-          })
-          .catch((errors) => setErrors(errors.response.data.errors))
-      });
-      return;
-    }
-
-    await httpClient
-      .post('/sanctum/token', {
-        ...rest,
-        device_name: window.store ? 'electron' : 'web',
-      })
-      .then(async (response) => {
-        const token = response.data;
-
-        await storeToken(token);
-
-        setErrors(null);
-        navigate('/');
-      })
-      .catch((errors) => setErrors(errors.response.data.errors))
-  }, [storeToken, navigate, httpClient]);
+    handleLogin(data);
+  }, [handleLogin]);
 
   return (
     <Wrapper>
