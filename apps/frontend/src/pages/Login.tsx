@@ -3,9 +3,9 @@ import { useNavigate } from "react-router";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Box, Button, Card, Checkbox, Flex, Heading, Text } from "@radix-ui/themes";
-import { httpClient } from "../common/utils/httpClient";
 import { TextField } from '../common/components/TextField';
 import { useTokenManager } from '../common/hooks/useTokenManager';
+import { useHttpClient } from '../common/hooks/useHttpClient';
 
 type LoginRequest = { email?: string | null, password?: string | null, remember: boolean };
 
@@ -23,6 +23,7 @@ const initialData: LoginRequest = {
 function Login() {
   const [errors, setErrors] = useState<Error | null>(null);
   const [passwordInputType] = useState('password');
+  const { httpClient } = useHttpClient();
 
   const { storeToken } = useTokenManager();
   const navigate = useNavigate();
@@ -33,6 +34,19 @@ function Login() {
 
   const onSubmit = useCallback(async (data: LoginRequest) => {
     const { ...rest } = data;
+
+    if (!window.store) {
+      await httpClient.get('/sanctum/csrf-cookie').then(() => {
+        httpClient
+          .post('/login', { ...rest })
+          .then(async () => {
+            setErrors(null);
+            navigate('/');
+          })
+          .catch((errors) => setErrors(errors.response.data.errors))
+      });
+      return;
+    }
 
     await httpClient
       .post('/sanctum/token', {
@@ -48,7 +62,7 @@ function Login() {
         navigate('/');
       })
       .catch((errors) => setErrors(errors.response.data.errors))
-  }, [storeToken, navigate]);
+  }, [storeToken, navigate, httpClient]);
 
   return (
     <Wrapper>
