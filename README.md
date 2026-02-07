@@ -26,7 +26,7 @@ During logins, the Larval login endpoint will create a cookie on the backend. Wh
 }
 ```
 
-### Electron
+### Via Desktop application (Electron)
 
 During logins, a token is created. The created token is stored using the exposed Electron bridge APIs which set/get the token that is persisted on the desktop rather than in the web browser.
 
