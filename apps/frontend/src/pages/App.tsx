@@ -1,4 +1,4 @@
-import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar, IconButton } from "@radix-ui/themes"
+import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar, Tooltip } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, isToday, parse, set } from "date-fns";
@@ -18,6 +18,7 @@ import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { useAuth } from "../common/context/auth/useAuth";
 import { initials } from "../common/utils/avatar";
 import { IconHome, IconStar } from "@tabler/icons-react";
+import { NavMenuItem } from "../common/components/Nav";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -155,8 +156,12 @@ function App() {
     <Flex direction="row" height="100%" display="flex">
       <Nav>
         <NavMenu>
-          <IconButton size="2" color="blue"><IconHome size="16px" /></IconButton>
-          <IconButton size="2" style={{ background: 'none', color: '#666'}}><IconStar size="16px" /></IconButton>
+          <Tooltip content="Home" side="right">
+            <NavMenuItem active><IconHome size="16px" /></NavMenuItem>
+          </Tooltip>
+          <Tooltip content="Pinned" side="right">
+            <NavMenuItem><IconStar size="16px" /></NavMenuItem>
+          </Tooltip>
         </NavMenu>
         <Avatar size="2" color="blue" fallback={initials(user.name) ?? ''} radius="full" />
       </Nav>
@@ -203,7 +208,7 @@ function App() {
         <Content>
           <Content>
             {(!!entry) && (
-              <Section>
+              <Section onClick={() => editorRef.current?.focus()}>
                 <Controller
                   control={formUpdate.control}
                   name="content"

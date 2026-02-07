@@ -101,7 +101,7 @@ const DateBlock = styled(Flex, {
   }),
   ...(isSelected && {
     borderColor: 'transparent',
-    background: '#4291ff',
+    background: 'var(--bg-primary)',
     color: '#fff',
     '&:hover': {
       background: '#317ae0'

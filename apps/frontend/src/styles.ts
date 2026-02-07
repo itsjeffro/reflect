@@ -18,6 +18,7 @@ export const globalStyles = css`
 
   :root {
     --border: #d8d8d8;
+    --bg-primary: #0190ff;
   }
 
   #root {
