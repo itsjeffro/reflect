@@ -73,7 +73,7 @@ module.exports = {
       const startServer = new Promise<void>((resolve, reject) => {
         const viteProjectDir = path.resolve(__dirname, FRONTEND_PATH);
 
-        viteProcess = spawn('pnpm', ['dev'], {
+        viteProcess = spawn('pnpm', ['dev', '--port 5174'], {
           cwd: viteProjectDir,
           shell: true,
           stdio: 'pipe',
@@ -98,7 +98,7 @@ module.exports = {
       await startServer;
     },
      generateAssets: async () => {
-      const isDev = false;
+      const isDev = process.env.VITE_SERVER;
 
       if (isDev) {
         console.log(`Skipping generateAssets hook.`);

@@ -23,8 +23,7 @@ export const useHttpClient = () => {
   const httpClient = useMemo(() => {
     return axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL,
-      ...(isElectron && tokenConfig),
-      ...(window.store === undefined && sameHostnameConfig)
+      ...(isElectron ? tokenConfig : sameHostnameConfig),
     });
   }, [isElectron, tokenConfig, sameHostnameConfig]);
 

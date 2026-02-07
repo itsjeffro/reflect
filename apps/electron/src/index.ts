@@ -12,8 +12,6 @@ type StoreSchema = {
 
 const store = new Store<StoreSchema>();
 
-console.log({ isDev })
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -40,7 +38,7 @@ const createWindow = () => {
   });
 
   if (isDev) {
-    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.loadURL("http://localhost:5174");
 
     mainWindow.webContents.openDevTools();
   } else {
