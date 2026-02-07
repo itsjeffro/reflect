@@ -20,3 +20,20 @@ export const NavMenuItem = styled(IconButton)<NavMenuItemProps>(({ active }) => 
     },
   }))
 }));
+
+export const Nav = styled.nav({
+  borderRight: '1px solid var(--border)',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '1rem',
+  flexGrow: 0,
+});
+
+export const NavMenu = styled.div({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.75rem',
+})

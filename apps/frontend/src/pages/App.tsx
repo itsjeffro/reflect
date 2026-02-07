@@ -1,4 +1,4 @@
-import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar, Tooltip } from "@radix-ui/themes"
+import { Badge, Flex, Grid, ScrollArea, Text, Box, Button } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, isToday, parse, set } from "date-fns";
@@ -15,10 +15,7 @@ import { useSearchParams } from "react-router";
 import { EntryList } from "../common/components/EntryList";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
-import { useAuth } from "../common/context/auth/useAuth";
-import { initials } from "../common/utils/avatar";
-import { IconHome, IconStar } from "@tabler/icons-react";
-import { NavMenuItem } from "../common/components/Nav";
+import { Content } from "../common/components/Content";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -27,7 +24,6 @@ const MONTHS = [
 function App() {
   const editorRef = useRef<MDXEditorMethods | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
 
   const date = useMemo(() => {
     const selectedDate = searchParams.get('date');
@@ -153,18 +149,7 @@ function App() {
   }, [entry, formUpdate, selectedDate]);
 
   return (
-    <Flex direction="row" height="100%" display="flex">
-      <Nav>
-        <NavMenu>
-          <Tooltip content="Home" side="right">
-            <NavMenuItem active><IconHome size="16px" /></NavMenuItem>
-          </Tooltip>
-          <Tooltip content="Pinned" side="right">
-            <NavMenuItem><IconStar size="16px" /></NavMenuItem>
-          </Tooltip>
-        </NavMenu>
-        <Avatar size="2" color="blue" fallback={initials(user.name) ?? ''} radius="full" />
-      </Nav>
+    <>
 
       <ScrollArea scrollbars="vertical" style={{ height: '100%' }} asChild>
         <Sidebar>
@@ -241,28 +226,11 @@ function App() {
           </EntriesList>
         </Content>
       </Main>
-    </Flex>
+    </>
   )
 }
 
 export default App;
-
-const Nav = styled.nav({
-  borderRight: '1px solid var(--border)',
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '1rem',
-  flexGrow: 0,
-});
-
-const NavMenu = styled.div({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.75rem',
-})
 
 const SidebarPadding = styled.div({
   padding: '1rem',
@@ -284,13 +252,6 @@ const Main = styled.main({
 
 const Heading = styled.div({
   flex: '0 0 auto',
-});
-
-const Content = styled.div({
-  flex: 1,
-  minHeight: 0,
-  overflow: 'auto',
-  display: 'flex',
 });
 
 const EntriesList = styled.div({

@@ -3,6 +3,10 @@ import { useGetUser } from "./common/api/getUser";
 import { useEffect, useState } from "react";
 import { useAuth } from "./common/context/auth/useAuth";
 import { useTokenManager } from "./common/hooks/useTokenManager";
+import { Avatar, Flex, Tooltip } from "@radix-ui/themes";
+import { Nav, NavMenu, NavMenuItem } from "./common/components/Nav";
+import { IconHome, IconStar } from "@tabler/icons-react";
+import { initials } from "./common/utils/avatar";
 
 export const Layout = () => {
   const navigate = useNavigate();
@@ -40,5 +44,20 @@ export const Layout = () => {
     return <>Loading...</>
   }
 
-  return <Outlet />
+  return (
+    <Flex direction="row" height="100%" display="flex">
+      <Nav>
+        <NavMenu>
+          <Tooltip content="Home" side="right">
+            <NavMenuItem active onClick={() => navigate('/', { viewTransition: true })}><IconHome size="16px" /></NavMenuItem>
+          </Tooltip>
+          <Tooltip content="Pinned" side="right">
+            <NavMenuItem><IconStar size="16px" /></NavMenuItem>
+          </Tooltip>
+        </NavMenu>
+        <Avatar size="2" color="blue" fallback={initials(user?.name) ?? ''} radius="full" />
+      </Nav>
+      <Outlet />
+    </Flex>
+  )
 };

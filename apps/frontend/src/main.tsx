@@ -11,6 +11,7 @@ import { Global } from '@emotion/react';
 import { globalStyles } from './styles.ts';
 import { Layout } from './Layout.tsx';
 import { AuthProvider } from './common/context/auth/AuthProvider.tsx';
+import { List } from './pages/List.tsx';
 
 const router = createHashRouter([
   {
@@ -18,6 +19,7 @@ const router = createHashRouter([
     Component: Layout,
     children: [
       { path: '/', Component: App },
+      { path: '/List', Component: List },
     ]
   },
   {
