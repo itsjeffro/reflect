@@ -1,4 +1,4 @@
-import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar } from "@radix-ui/themes"
+import { Badge, Flex, Grid, ScrollArea, Text, Box, Button, Avatar, IconButton } from "@radix-ui/themes"
 import { CalendarMonth } from "../common/components/CalendarMonth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, isToday, parse, set } from "date-fns";
@@ -17,6 +17,7 @@ import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { useAuth } from "../common/context/auth/useAuth";
 import { initials } from "../common/utils/avatar";
+import { IconHome, IconStar } from "@tabler/icons-react";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -152,6 +153,14 @@ function App() {
 
   return (
     <Flex direction="row" height="100%" display="flex">
+      <Nav>
+        <NavMenu>
+          <IconButton size="2" color="blue"><IconHome size="16px" /></IconButton>
+          <IconButton size="2" style={{ background: 'none', color: '#666'}}><IconStar size="16px" /></IconButton>
+        </NavMenu>
+        <Avatar size="2" color="blue" fallback={initials(user.name) ?? ''} radius="full" />
+      </Nav>
+
       <ScrollArea scrollbars="vertical" style={{ height: '100%' }} asChild>
         <Sidebar>
           <SidebarPadding>
@@ -186,8 +195,6 @@ function App() {
                 {(!isPending && updatedAt) && (
                   <Badge color="green">Updated at {format(updatedAt, 'y-MM-dd hh:mm:ss')}</Badge>
                 )}
-
-                <Avatar size="1" fallback={initials(user.name) ?? ''} radius="full" />
               </Flex>
             </Flex>
           </Box>
@@ -235,15 +242,32 @@ function App() {
 
 export default App;
 
+const Nav = styled.nav({
+  borderRight: '1px solid var(--border)',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '1rem',
+  flexGrow: 0,
+});
+
+const NavMenu = styled.div({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.75rem',
+})
+
 const SidebarPadding = styled.div({
   padding: '1rem',
 });
 
 const Sidebar = styled.aside({
+  background: '#fdfdfd',
   borderRight: '1px solid rgba(0, 0, 0, .12)',
   overflowY: 'hidden',
   width: '300px',
-  flexShrink: 0,
 });
 
 const Main = styled.main({
