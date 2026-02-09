@@ -16,6 +16,7 @@ import { EntryList } from "../common/components/EntryList";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { Content } from "../common/components/Content";
+import { Sidebar, SidebarPadding } from "../common/components/Sidebar";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -231,17 +232,6 @@ function App() {
 }
 
 export default App;
-
-const SidebarPadding = styled.div({
-  padding: '1rem',
-});
-
-const Sidebar = styled.aside({
-  background: '#fdfdfd',
-  borderRight: '1px solid rgba(0, 0, 0, .12)',
-  overflowY: 'hidden',
-  width: '300px',
-});
 
 const Main = styled.main({
   display: 'flex',
