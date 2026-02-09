@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import "@radix-ui/themes/styles.css";
 import { Theme } from '@radix-ui/themes';
-import { createHashRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-router';
 
 import App from './pages/App.tsx'
 import Login from './pages/Login.tsx'
@@ -13,7 +13,7 @@ import { Layout } from './Layout.tsx';
 import { AuthProvider } from './common/context/auth/AuthProvider.tsx';
 import { List } from './pages/List.tsx';
 
-const router = createHashRouter([
+const routes = [
   {
     path: "/",
     Component: Layout,
@@ -26,7 +26,9 @@ const router = createHashRouter([
     path: '/login',
     Component: Login,
   }
-]);
+];
+
+const router = window?.store ? createHashRouter(routes) : createBrowserRouter(routes);
 
 const queryClient = new QueryClient()
 
