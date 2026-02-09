@@ -9,7 +9,7 @@ type Params = {
   published_at?: string | null;
 }
 
-export const useGetEntries = (params: Params) => {
+export const useGetEntries = (params: Params = {}) => {
   const { httpClient } = useHttpClient();
 
   return useQuery<Response, Error>({
@@ -23,7 +23,6 @@ export const useGetEntries = (params: Params) => {
           }
         })
         .then((response) => response.data);
-    },
-    enabled: !!params?.published_at
+    }
   });
 };
