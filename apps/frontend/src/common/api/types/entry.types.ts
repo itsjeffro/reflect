@@ -1,8 +1,8 @@
 export type EntryRequest = {
-  title?: string;
-  content?: string;
-  published_at: string;
-  updated_at?: string;
+  title?: string | null;
+  content?: string | null;
+  published_at: string | null;
+  updated_at?: string | null;
 }
 
 export type EntryModel = {
