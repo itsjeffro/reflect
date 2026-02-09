@@ -1,18 +1,21 @@
-import { Outlet, useNavigate } from "react-router"
+import { Outlet, useLocation, useNavigate } from "react-router"
 import { useGetUser } from "./common/api/getUser";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./common/context/auth/useAuth";
 import { useTokenManager } from "./common/hooks/useTokenManager";
 import { Avatar, Flex, Tooltip } from "@radix-ui/themes";
 import { Nav, NavMenu, NavMenuItem } from "./common/components/Nav";
-import { IconHome, IconStar } from "@tabler/icons-react";
+import { type Icon } from "@tabler/icons-react";
 import { initials } from "./common/utils/avatar";
+import { UserPopover } from "./common/components/UserPropover";
+import { NAV_ITEMS } from "./constants/nav.constants";
 
 export const Layout = () => {
   const navigate = useNavigate();
   const { getToken } = useTokenManager();
   const { setUser, setToken } = useAuth();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const { pathname } = useLocation();
 
   const { data: user, isLoading, error, isError } = useGetUser({
     enabled: !isLoadingAuth,
@@ -40,6 +43,11 @@ export const Layout = () => {
     }
   }, [error, isError, isLoadingAuth, isLoading, navigate, setUser, user]);
 
+  const renderIcon = useCallback((icon: Icon) => {
+    const Component = icon;
+    return <Component size="16px" />
+  }, []);
+
   if (isLoading) {
     return <>Loading...</>
   }
@@ -48,14 +56,21 @@ export const Layout = () => {
     <Flex direction="row" height="100%" display="flex">
       <Nav>
         <NavMenu>
-          <Tooltip content="Home" side="right">
-            <NavMenuItem active onClick={() => navigate('/', { viewTransition: true })}><IconHome size="16px" /></NavMenuItem>
-          </Tooltip>
-          <Tooltip content="Pinned" side="right">
-            <NavMenuItem><IconStar size="16px" /></NavMenuItem>
-          </Tooltip>
+          {NAV_ITEMS.map((navItem) => (
+            <Tooltip content={navItem.label} side="right">
+              <NavMenuItem
+                onClick={() => navigate(navItem.path, { viewTransition: true })} 
+                active={pathname === navItem.path}
+                >
+                  {renderIcon(navItem.icon)}
+                </NavMenuItem>
+            </Tooltip>
+          ))}
         </NavMenu>
-        <Avatar size="2" color="blue" fallback={initials(user?.name) ?? ''} radius="full" />
+
+        <UserPopover user={user!}>
+          <Avatar role="button" size="2" color="blue" fallback={initials(user?.name) ?? ''} radius="full" />
+        </UserPopover>
       </Nav>
       <Outlet />
     </Flex>
