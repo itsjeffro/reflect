@@ -17,6 +17,8 @@ import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { Content } from "../common/components/Content";
 import { Sidebar, SidebarPadding } from "../common/components/Sidebar";
+import { EditorOption, EditorOptions } from "../common/components/EditorOptions";
+import { IconTag, IconTrash } from "@tabler/icons-react";
 
 const MONTHS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -192,28 +194,35 @@ function App() {
         </Heading>
 
         <Content>
-          <Content>
-            {(!!entry) && (
-              <Section onClick={() => editorRef.current?.focus()}>
-                <Controller
-                  control={formUpdate.control}
-                  name="content"
-                  render={({ field }) => (
-                    <Editor value={field.value ?? ''} onChange={field.onChange} ref={editorRef} />
-                  )}
-                />
-              </Section>
-            )}
-
-            <EmptyPlaceholder>
-              {(!isEntriesPending && !entry) && (
-                <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
+          <Content style={{ flexDirection: 'column'}}>
+            <Content>
+              {(!!entry) && (
+                <Section onClick={() => editorRef.current?.focus()}>
+                  <Controller
+                    control={formUpdate.control}
+                    name="content"
+                    render={({ field }) => (
+                      <Editor value={field.value ?? ''} onChange={field.onChange} ref={editorRef} />
+                    )}
+                  />
+                </Section>
               )}
 
-              {isEntriesPending && (
-                <Text>Loading...</Text>
-              )}
-            </EmptyPlaceholder>
+              <EmptyPlaceholder>
+                {(!isEntriesPending && !entry) && (
+                  <Button onClick={handleCreateClick} disabled={isCreatePending}>Create entry</Button>
+                )}
+
+                {isEntriesPending && (
+                  <Text>Loading...</Text>
+                )}
+              </EmptyPlaceholder>
+            </Content>
+
+            <EditorOptions>
+              <EditorOption><IconTag size="16" color="var(--text-primary)" /> Add tag</EditorOption>
+              <EditorOption onClick={() => handleDeleteClick(entryId!)}><IconTrash size="16" color="var(--text-danger)" /> Delete</EditorOption>
+            </EditorOptions>
           </Content>
 
           <EntriesList>
