@@ -88,12 +88,12 @@ const DateBlock = styled(Flex, {
   position: 'relative',
   border: '1px solid transparent',
   '&:hover': {
-    background: '#f5f5f5',
+    background: '#edeff5',
   },
   ...(hasEvents && {
-    background: '#eceaea',
+    background: '#edeff5',
     '&:hover': {
-      background: '#e2e1e1'
+      background: '#e4e7ee'
     }
   }),
   ...(isToday && {
