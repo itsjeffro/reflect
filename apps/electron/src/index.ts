@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
 import Store from 'electron-store';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import log from 'electron-log/main';
 
 const isDev = process.env.VITE_SERVER;
 const DIST_DIR = isDev ? path.join(process.resourcesPath, 'dist') : path.join(__dirname, '../../../frontend/dist');
@@ -10,12 +11,7 @@ type StoreSchema = {
   token: string | null;
 };
 
-const store = new Store<StoreSchema>();
-
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
-}
+let store: Store<StoreSchema>;
 
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const CUSTOM_PROTOCOL = 'vite'; 
@@ -93,23 +89,40 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 app.whenReady().then(() => {
-  if (!isDev) {
-    handleCustomProtocol();
-  }
+  try {
+    store = new Store<StoreSchema>();
 
-  setupIpcHandlers();
-
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+    if (!isDev) {
+      handleCustomProtocol();
     }
-  });
+
+    setupIpcHandlers();
+
+    createWindow();
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  } catch (error) {
+    log.error('Failed to load', error);
+    app.quit();
+  }
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+process.on('uncaughtException', (error) => {
+  log.error('Uncaught exception', { error });
+  app.quit();
+});
+
+process.on('unhandledRejection', (error) => {
+  log.error('Unhandled promise rejection', { error });
+  app.quit();
 });
