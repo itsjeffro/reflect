@@ -1,6 +1,18 @@
 import { css } from '@emotion/react';
 
 export const globalStyles = css`
+  :root {
+    --border: #d8d8d8;
+    --bg-primary: #0190ff;
+
+    --btn-secondary: #f9fafe;
+    --btn-secondary-hover: #edeff5;
+
+    --text-default: #222;
+    --text-primary: #0190ff;
+    --text-danger: #ff0101;
+  }
+
   *, *:before, *:after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -14,11 +26,7 @@ export const globalStyles = css`
     height: 100%;
     margin: 0;
     padding: 0;
-  }
-
-  :root {
-    --border: #d8d8d8;
-    --bg-primary: #0190ff;
+    color: var(--text-default);
   }
 
   #root {
@@ -48,6 +56,14 @@ export const globalStyles = css`
 
     p, li {
       margin-top: 0;
+    }
+
+    li:before {
+      top: 2px;
+    }
+
+    li:after {
+      top: 5px;
     }
   }
 
