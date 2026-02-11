@@ -57,10 +57,10 @@ export const Layout = () => {
       <Nav>
         <NavMenu>
           {NAV_ITEMS.map((navItem) => (
-            <Tooltip content={navItem.label} side="right">
+            <Tooltip content={navItem.label} side="right" key={navItem.label}>
               <NavMenuItem
                 onClick={() => navigate(navItem.path, { viewTransition: true })} 
-                active={pathname === navItem.path}
+                selected={pathname === navItem.path}
                 >
                   {renderIcon(navItem.icon)}
                 </NavMenuItem>

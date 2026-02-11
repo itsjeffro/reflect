@@ -2,17 +2,17 @@ import styled from "@emotion/styled";
 import { IconButton } from "@radix-ui/themes";
 
 type NavMenuItemProps = {
-  active?: boolean;
+  selected?: boolean;
 };
 
-export const NavMenuItem = styled(IconButton)<NavMenuItemProps>(({ active }) => ({
+export const NavMenuItem = styled(IconButton)<NavMenuItemProps>(({ selected }) => ({
   background: 'none', 
   color: '#666',
   cursor: 'pointer',
   '&:hover': {
     background: '#f7f7f7',
   },
-  ...(active && ({
+  ...(selected && ({
     background: 'var(--bg-primary)',
     color: '#fff',
     '&:hover': {
