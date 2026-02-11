@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "pnpm --filter reflect run dev",
-    "electron:dev": "pnpm --filter electron run start",
-    "electron:start": "pnpm --filter electron run start"
+    "electron:dev": "pnpm --filter desktop run start",
+    "electron:start": "pnpm --filter desktop run start"
   },
   "keywords": [],
   "author": "",
