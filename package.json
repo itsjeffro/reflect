@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "pnpm --filter reflect run dev",
+    "electron:dev": "pnpm --filter electron run start",
     "electron:start": "pnpm --filter electron run start"
   },
   "keywords": [],
