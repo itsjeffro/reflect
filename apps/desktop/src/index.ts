@@ -20,16 +20,16 @@ const logger = createLogger({
   ],
 });
 
+/**
+ * When the app is packaged (pnpm make), the vite assets are copied to desktop.app/Contents/Resources/renderer.
+ * Otherwise, if we're running the app using "pnpm start", then we will load the asserts from ./renderer dir.
+ */
 const getAppPath = () => {
   if (app.isPackaged) {
     return path.join(process.resourcesPath, 'renderer');
   }
 
-  if (isDev) {
-    return path.join(process.resourcesPath, 'dist');
-  }
-
-  return path.join(__dirname, '../../../frontend/dist');
+  return path.join(__dirname, '../../renderer');
 }
 
 if (require('electron-squirrel-startup')) {
@@ -102,7 +102,9 @@ app.on('ready', () => {
     return store.get(key);
   });
 
-  handleCustomProtocol();
+  if (!isDev) {
+    handleCustomProtocol();
+  }
 
   createWindow();
 });
