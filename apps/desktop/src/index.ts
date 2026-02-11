@@ -45,7 +45,6 @@ const handleCustomProtocol = () => {
 
       logger.info('protocol handle', {filePath, fullPath, url });
 
-      // return net.fetch(fullPath);
       const data = await fs.promises.readFile(fullPath);
 
       return new Response(data, {
@@ -63,8 +62,8 @@ const handleCustomProtocol = () => {
 
 const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    height: 878,
+    width: 1352,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -72,11 +71,12 @@ const createWindow = (): void => {
 
   if (isDev) {
     mainWindow.loadURL("http://localhost:5174");
+
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadURL(`${customProtocol}://index.html`);
   }
 
-  mainWindow.webContents.openDevTools();
 };
 
 protocol.registerSchemesAsPrivileged([
