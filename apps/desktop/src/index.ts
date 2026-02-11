@@ -1,16 +1,28 @@
-import { app, BrowserWindow, net, ipcMain, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import { SecureStore } from './services/store';
-import { pathToFileURL } from 'url';
 import path from 'path';
+import { createLogger, transports } from 'winston';
+import fs from 'fs';
+import { getMimeType } from './utils/mime.utils';
 
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 const isDev = process.env.VITE_SERVER;
-const CUSTOM_PROTOCOL = 'vite'; 
+
+const customProtocol = 'vite'; 
+
+const logFile = path.join(app.getPath('userData'), 'main.log');
+
+const logger = createLogger({
+  level: 'info',
+  transports: [
+    new transports.File({ filename: logFile }),
+  ],
+});
 
 const getAppPath = () => {
   if (app.isPackaged) {
-    return path.join(app.getAppPath(), 'renderer');
+    return path.join(process.resourcesPath, 'renderer');
   }
 
   if (isDev) {
@@ -25,25 +37,27 @@ if (require('electron-squirrel-startup')) {
 }
 
 const handleCustomProtocol = () => {
-  protocol.handle(CUSTOM_PROTOCOL, (request) => {
-    const requestUrl = new URL(request.url);
-    const { pathname } = requestUrl;
+  protocol.handle(customProtocol, async (request) => {
+    try {
+      const url = new URL(request.url);
+      const filePath = url.pathname.replace(/^\/+/, '') || 'index.html';
+      const fullPath = path.join(getAppPath(), filePath);
 
-    let filePath = pathname.replace(/\/+$/, '');
-    
-    if (pathname === '/') {
-      filePath = 'index.html'
-    } else if (path.extname(filePath)) {
-      filePath = filePath.replace('index.html/', '')
+      logger.info('protocol handle', {filePath, fullPath, url });
+
+      // return net.fetch(fullPath);
+      const data = await fs.promises.readFile(fullPath);
+
+      return new Response(data, {
+        status: 200,
+        headers: { 'content-type': getMimeType(fullPath) },
+      })
+    } catch (err) {
+      return new Response('File not found', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain' },
+      });
     }
-
-    let fullPath = path.join(getAppPath(), filePath);
-
-    fullPath = pathToFileURL(fullPath).toString();
-
-    console.log('protocol handle', {pathname, fullPath, filePath });
-
-    return net.fetch(fullPath);
   })
 }
 
@@ -56,12 +70,10 @@ const createWindow = (): void => {
     },
   });
 
-  // mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
   if (isDev) {
     mainWindow.loadURL("http://localhost:5174");
   } else {
-    mainWindow.loadURL(`${CUSTOM_PROTOCOL}://index.html`);
+    mainWindow.loadURL(`${customProtocol}://index.html`);
   }
 
   mainWindow.webContents.openDevTools();
@@ -69,7 +81,7 @@ const createWindow = (): void => {
 
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: CUSTOM_PROTOCOL,
+    scheme: customProtocol,
     privileges: {
       standard: true,
       secure: true,
