@@ -6,6 +6,7 @@ import { mergeRefs } from '../../utils';
 import { Portal } from '@radix-ui/themes';
 import { MultiOption } from './MultiOption';
 import { SingleOption } from './SingleOption';
+import { Dropdown, DropdownOption } from './Dropdown';
 
 export type Option = Record<string, string>;
 
@@ -70,11 +71,9 @@ export const Select = forwardRef((
   });
 
   const handleClick = useCallback(() => {
-    if (disabled) {
-      return;
+    if (!disabled) {
+      setIsOpen(true);
     }
-
-    setIsOpen(true);
   }, [setIsOpen, disabled]);
 
   /**
@@ -117,22 +116,22 @@ export const Select = forwardRef((
     if (isMulti) {
       options = selected?.concat(options) ?? [];
     }
-
-    if (onChange) {
-      onChange(options);
-    }
-
+    
     setIsOpen(false);
     setSelected(options);
     setInput('');
-  }, [onChange, isMulti, selected])
+  }, [isMulti, selected])
 
   /**
    * Handle selecting option and resetting other states.
    */
-  const handleOptionSelect = useCallback((option: Option) => {
+  const handleOptionClick = useCallback((option: Option) => {
     updateSelected(option);
-  }, [updateSelected]);
+
+    if (isMulti) {
+      inputRef.current?.focus();
+    }
+  }, [updateSelected, isMulti]);
 
   const handleKeyDownPress = useCallback((event: KeyboardEvent) => {
     // Should open on key UP/DOWN if focused dropdown is closed.
@@ -227,6 +226,10 @@ export const Select = forwardRef((
     });
   }, [setSelected]);
 
+  useEffect(() => {
+    onChange?.(selected ?? []);
+  }, [onChange, selected]);
+
   return (
     <>
       <BaseAutocomplete
@@ -281,11 +284,13 @@ export const Select = forwardRef((
             {filteredOptions.map((option) => (
               <DropdownOption
                 key={option.value} 
-                onClick={() => handleOptionSelect(option)}
+                onClick={() => handleOptionClick(option)}
                 aria-selected={!!selectedOptions?.includes(option.value)}
                 selected={!!selectedOptions?.includes(option.value)}
                 data-value={option.value}
-              >{option.label}</DropdownOption>
+              >
+                {option.label}
+              </DropdownOption>
             ))}
 
             {filteredOptions.length < 1 && (
@@ -313,30 +318,6 @@ const BaseAutocomplete = styled.div({
   cursor: 'pointer',
   minHeight: 40,
 });
-
-const Dropdown = styled.div({
-  background: '#fff',
-  boxShadow: '0 3px 8px rgba(0,0,0,.20)',
-  borderRadius: '4px',
-  alignItems: 'center',
-  padding: '.25rem 0',
-  maxHeight: '300px',
-  overflowY: 'auto',
-  zIndex: 1,
-});
-
-const DropdownOption = styled.div<{ selected?: boolean }>(({ selected }) => ({
-  padding: '.5rem',
-  fontSize: '0.875rem',
-  fontFamily: 'arial',
-  ...(selected && {
-    background: 'rgba(0,0,0,.02)',
-  }),
-  '&:hover, &.focused': {
-    background: selected ? 'rgba(0,0,0,.04)' : 'rgba(0,0,0,.02)',
-    cursor: 'pointer',
-  },
-}))
 
 const Input = styled.input({
   fontSize: '0.875rem',

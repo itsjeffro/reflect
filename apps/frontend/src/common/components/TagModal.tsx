@@ -1,7 +1,7 @@
 import { Button, Dialog, Flex, Text } from '@radix-ui/themes';
 import { useGetTags } from '../api/getTags';
 import { Select, type Option } from './Select';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
 type TagModalProps = DialogPrimitive.DialogProps & {
@@ -26,10 +26,6 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
     console.log(options);
     setSelectedTags(options);
   }, []);
-
-  useEffect(() => {
-    console.log(container)
-  }, [container]);
 
   return (
     <DialogPrimitive.Root {...props}>
