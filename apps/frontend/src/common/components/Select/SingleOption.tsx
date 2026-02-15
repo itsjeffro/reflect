@@ -21,7 +21,7 @@ export const SingleOption = ({ children, selected, input, placeholder, disabled 
         </InputText>
       )}
 
-      {!selected && !input && (
+      {(!selected || selected.length < 1)  && !input && (
         <InputText style={{ color: disabled ? 'rgba(0,0,0,.40)' : 'var(--bg-content-subtle)', }}>
           {placeholder && placeholder}
         </InputText>
