@@ -28,7 +28,7 @@ export const MultiOption = ({ children, onRemoveClick, selected }: MultiOptionPr
 const Tags = styled.div({
   display: 'flex',
   gap: '.25rem',
-  padding: '0 0.5rem 0 0',
+  padding: '0 0.5rem 0 0.5rem',
   fontSize: '0.875rem',
   fontFamily: 'arial',
 })

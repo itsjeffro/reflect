@@ -29,7 +29,7 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
           <Text size="2">Add or remove labels to help others find your content.</Text>
 
           <Select
-            // isMulti
+            isMulti
             options={tags} 
             value={selectedTags} 
             onChange={setSelectedTags}
