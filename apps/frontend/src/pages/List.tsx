@@ -16,10 +16,14 @@ import { EditorOption, EditorOptions } from "../common/components/EditorOptions"
 import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { useCreateEntry } from "../common/api/createEntry";
+import { TagModal } from "../common/components/TagModal";
 
 export const List = () => {
   const editorRef = useRef<MDXEditorMethods | null>(null);
+
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data, isPending: isEntriesPending } = useGetEntries();
@@ -125,6 +129,10 @@ export const List = () => {
     createEntry({ title: null, content: null, published_at: format(new Date(), 'y-MM-dd hh:mm:ss') });
   }, [createEntry]);
 
+  const handleOpenTagModalClick = useCallback(() => {
+    setIsTagModalOpen(true)
+  }, []);
+
   useAutoSave({
     form: formUpdate,
     onSave: handleUpdate,
@@ -200,11 +208,16 @@ export const List = () => {
           </Content>
 
           <EditorOptions>
-            <EditorOption><IconTag size="16" color="var(--text-primary)" /> Add tag</EditorOption>
+            <EditorOption onClick={handleOpenTagModalClick}><IconTag size="16" color="var(--text-primary)" /> Add tag</EditorOption>
             <EditorOption onClick={handleDeleteClick}><IconTrash size="16" color="var(--text-danger)" /> Delete</EditorOption>
           </EditorOptions>
         </Content>
       </Main>
+
+      <TagModal 
+        open={isTagModalOpen} 
+        onClose={() => setIsTagModalOpen(false)}
+      ></TagModal>
     </>
   )
 }

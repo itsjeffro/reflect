@@ -8,6 +8,8 @@ export const globalStyles = css`
     --btn-secondary: #f9fafe;
     --btn-secondary-hover: #edeff5;
 
+    --input-bg: #f9fafe;
+
     --text-default: #222;
     --text-primary: #0190ff;
     --text-danger: #ff0101;
