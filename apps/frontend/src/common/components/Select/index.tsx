@@ -322,6 +322,7 @@ const Dropdown = styled.div({
   padding: '.25rem 0',
   maxHeight: '300px',
   overflowY: 'auto',
+  zIndex: 1,
 });
 
 const DropdownOption = styled.div<{ selected?: boolean }>(({ selected }) => ({
