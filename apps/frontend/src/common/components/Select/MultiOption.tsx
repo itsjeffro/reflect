@@ -18,9 +18,8 @@ export const MultiOption = ({ children, onRemoveClick, selected }: MultiOptionPr
             <RemoveButton onClick={() => onRemoveClick(option)}>x</RemoveButton>
           </Tag>
         ))}
+        {children}
       </Tags>
-
-      {children}
     </>
   )
 }
@@ -31,6 +30,8 @@ const Tags = styled.div({
   padding: '0 0.5rem 0 0.5rem',
   fontSize: '0.875rem',
   fontFamily: 'arial',
+  flexWrap: 'wrap',
+  flexGrow: 1,
 })
 
 const Tag = styled.div({
@@ -41,7 +42,9 @@ const Tag = styled.div({
   borderRadius: '4px',
   fontSize: '0.875rem',
   background: '#fff',
-  padding: '0 0 0 0.5rem'
+  padding: '0 0 0 0.5rem',
+  marginTop: '0.15rem',
+  height: '25px',
 });
 
 const RemoveButton = styled.button({
@@ -50,4 +53,5 @@ const RemoveButton = styled.button({
   padding: '0 0.5rem',
   alignItems: 'center',
   display: 'inline-flex',
+  cursor: 'pointer',
 })

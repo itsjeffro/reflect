@@ -1,7 +1,7 @@
 import { Button, Dialog, Flex, Text } from '@radix-ui/themes';
 import { useGetTags } from '../api/getTags';
-import { Select } from './Select';
-import { useMemo, useRef, useState } from 'react';
+import { Select, type Option } from './Select';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 type TagModalProps = Dialog.RootProps & {
   onClose: () => void;
@@ -20,6 +20,11 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
     return options as Record<string, string>[];
   }, [data]);
 
+  const handleChange = useCallback((options: Option[]) => {
+    console.log(options);
+    setSelectedTags(options);
+  }, []);
+
   return (
     <Dialog.Root {...props}>
       <Dialog.Content ref={dialogRef} style={{ zIndex: 2 }}>
@@ -32,7 +37,7 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
             isMulti
             options={tags} 
             value={selectedTags} 
-            onChange={setSelectedTags}
+            onChange={handleChange}
             name="tags"
             placeholder='Add label'
           />

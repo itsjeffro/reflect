@@ -43,13 +43,6 @@ export const Select = forwardRef((
   const focusedOptionRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null);
 
-    if (value !== selected) {
-      const oneSelected = value && value.length > 0 ? [value?.[0]] : [];
-      const multipleSelected = value ?? [];
-
-      setSelected(isMulti ? multipleSelected : oneSelected );
-    }
-
   const filteredOptions = useMemo(() => {
     const inputValue = input?.toLowerCase();
 
@@ -151,12 +144,16 @@ export const Select = forwardRef((
       setIsOpen(false);
     }
 
-    if (!isOpen) {
-      return;
+    if (event.key === 'Backspace' && inputRef?.current?.value === '') {
+      setSelected((prevState) => {
+        const newSelected = [...prevState ?? []];
+        newSelected.pop();
+        return newSelected;
+      });
     }
 
-    if (event.key === 'Backspace' && inputRef?.current?.value === '') {
-      console.log('remove recent')
+    if (!isOpen) {
+      return;
     }
 
     if (event.key === 'Enter') {
@@ -221,16 +218,13 @@ export const Select = forwardRef((
 
   const handleRemoveClick = useCallback((option: Option) => {
     setSelected((prevState) => {
-      return prevState?.filter((prevOption) => {
+      const newSelected = prevState?.filter((prevOption) => {
         return prevOption.value !== option.value;
-      })
+      });
+
+      return newSelected;
     });
   }, [setSelected]);
-
-  useEffect(() => {
-    console.log(selected);
-    onChange?.(selected ?? []);
-  }, [selected, onChange])
 
   return (
     <>
@@ -316,7 +310,7 @@ const BaseAutocomplete = styled.div({
   display: 'inline-flex',
   alignItems: 'center',
   cursor: 'pointer',
-  height: 40,
+  minHeight: 40,
 });
 
 const Dropdown = styled.div({
