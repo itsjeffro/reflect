@@ -4,33 +4,60 @@ import styled from "@emotion/styled";
 import { IconChevronDown } from "@tabler/icons-react";
 import { mergeRefs } from '../../utils';
 import { Portal } from '@radix-ui/themes';
+import { MultiOption } from './MultiOption';
+import { SingleOption } from './SingleOption';
+
+export type Option = Record<string, string>;
 
 interface SelectProps {
-  options?: Record<string, string>[];
+  name: string;
+  options?: Option[];
   disabled?: boolean;
-  value?: Record<string, string>[];
+  value?: Option[];
   placeholder?: string;
   onInputChange?: (value: string) => void;
-  onChange?: (value: Record<string, string>[]) => void;
+  onChange?: (value: Option[]) => void;
   multiselect?: boolean;
   container?: Element | DocumentFragment | null;
+  isMulti?: boolean;
 }
 
 export const Select = forwardRef((
-  { value, container, placeholder, onInputChange, onChange, options = [], disabled = false }: SelectProps
+  {
+    name,
+    value, 
+    placeholder, 
+    onInputChange, 
+    onChange, 
+    isMulti = false, 
+    options = [], 
+    disabled = false,
+  }: SelectProps
 ) => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [selected, setSelected] = useState<Record<string, string>[] | undefined>(value);
+  const [selected, setSelected] = useState<Option[] | undefined>(value);
   const [reference, setReference] = useState<HTMLDivElement | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const focusedOptionRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null);
 
+    if (value !== selected) {
+      const oneSelected = value && value.length > 0 ? [value?.[0]] : [];
+      const multipleSelected = value ?? [];
+
+      setSelected(isMulti ? multipleSelected : oneSelected );
+    }
+
   const filteredOptions = useMemo(() => {
     const inputValue = input?.toLowerCase();
-    return options.filter((option) => option.label.toLowerCase().includes(inputValue))
+
+    return options.filter((option) => {
+      const isSelected = option.label.toLowerCase().includes(inputValue);
+
+      return isSelected;
+    })
   }, [options, input]);
 
   const selectedOptions = useMemo(() => {
@@ -90,19 +117,28 @@ export const Select = forwardRef((
     [reference, disabled],
   );
 
-  /**
-   * Handle selecting option and resetting other states.
-   */
-  const handleOptionSelect = useCallback((option: Record<string, string>) => {
+  const updateSelected = useCallback((option: Option) => {
+    let options = [option];
+
+    if (isMulti) {
+      options = selected?.concat(options) ?? [];
+    }
+
     if (onChange) {
-      onChange([option]);
-      console.log(option);
+      onChange(options);
     }
 
     setIsOpen(false);
-    setSelected([option]);
+    setSelected(options);
     setInput('');
-  }, [onChange]);
+  }, [onChange, isMulti, selected])
+
+  /**
+   * Handle selecting option and resetting other states.
+   */
+  const handleOptionSelect = useCallback((option: Option) => {
+    updateSelected(option);
+  }, [updateSelected]);
 
   const handleKeyDownPress = useCallback((event: KeyboardEvent) => {
     // Should open on key UP/DOWN if focused dropdown is closed.
@@ -119,6 +155,10 @@ export const Select = forwardRef((
       return;
     }
 
+    if (event.key === 'Backspace' && inputRef?.current?.value === '') {
+      console.log('remove recent')
+    }
+
     if (event.key === 'Enter') {
       const value = focusedOptionRef?.current?.getAttribute('data-value');
       const matchingOption = options.find(option => option.value === value);
@@ -127,9 +167,7 @@ export const Select = forwardRef((
         return;
       }
 
-      setSelected([matchingOption]);
-      setIsOpen(false);
-      setInput('');
+      updateSelected(matchingOption);
       return;
     }
 
@@ -161,7 +199,7 @@ export const Select = forwardRef((
     focusedOptionRef.current.classList.add('focused')
 
     optionElements?.[newIndex].scrollIntoView({ behavior: 'auto', block: 'nearest' });
-  }, [isOpen, options, filteredOptions])
+  }, [isOpen, filteredOptions, options, updateSelected])
 
   useEffect(() => {
     if (isOpen) {
@@ -181,11 +219,18 @@ export const Select = forwardRef((
     };
   }, [handleKeyDownPress, isOpen, onDocumentClickEvent]);
 
+  const handleRemoveClick = useCallback((option: Option) => {
+    setSelected((prevState) => {
+      return prevState?.filter((prevOption) => {
+        return prevOption.value !== option.value;
+      })
+    });
+  }, [setSelected]);
+
   useEffect(() => {
-    if (value) {
-      // setSelected(value);
-    }
-  }, [value]);
+    console.log(selected);
+    onChange?.(selected ?? []);
+  }, [selected, onChange])
 
   return (
     <>
@@ -197,27 +242,42 @@ export const Select = forwardRef((
         tabIndex={0}
         onFocus={() => inputRef.current?.focus()}
       >
-        <InputContainer>
-          {!input && (
-            <InputText>
-              {selected?.map((option) => (
-                <span key={option.value}>{option.label}</span>
-              ))}
-            </InputText>
-          )}
-          {!selected && !input && (
-            <InputText style={{ color: disabled ? 'rgba(0,0,0,.40)' : 'var(--bg-content-subtle)', }}>
-              {placeholder && placeholder}
-            </InputText>
-          )}
-          <Input ref={inputRef} disabled={disabled} value={input} onChange={handleInputChange} />
-        </InputContainer>
+        {!isMulti && (
+          <SingleOption 
+            placeholder={placeholder} 
+            selected={selected} 
+            input={input} 
+            disabled={disabled}
+          >
+            <Input 
+              name={name}
+              ref={inputRef}
+              disabled={disabled}
+              value={input}
+              onChange={handleInputChange}
+            />
+          </SingleOption>
+        )}
+
+        {isMulti && (
+          <MultiOption selected={selected} onRemoveClick={handleRemoveClick}>
+            <Input
+              name={name}
+              ref={inputRef}
+              disabled={disabled}
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Add label"
+            />
+          </MultiOption>
+        )}
+
         <Close disabled={disabled} opened={isOpen}>
           <IconChevronDown size={14} />
         </Close>
       </BaseAutocomplete>
 
-      <Portal {...(!!container && { container })}>
+      <Portal>
         {isOpen && (
           <Dropdown
             ref={mergeRefs([refs.setFloating, listRef])}
@@ -282,17 +342,6 @@ const DropdownOption = styled.div<{ selected?: boolean }>(({ selected }) => ({
   },
 }))
 
-const InputText = styled.div({
-  gridArea: '1 / 1 / 2 / 3',
-  maxWidth: '100%',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  margin: '0 2px',
-  fontSize: '0.875rem',
-  fontFamily: 'arial',
-})
-
 const Input = styled.input({
   fontSize: '0.875rem',
   fontFamily: 'arial',
@@ -311,17 +360,6 @@ const Input = styled.input({
     outline: 'none',
   }
 });
-
-const InputContainer = styled.div({
-  alignItems: 'center',
-  display: 'grid',
-  flex: '1 1 0%',
-  flexWrap: 'wrap',
-  position: 'relative',
-  overflow: 'hidden',
-  padding: '2px 6px',
-  boxSizing: 'border-box',
-})
 
 const Close = styled.span<{ disabled?: boolean, opened?: boolean }>(({ disabled, opened }) => ({
   padding: '0 12px',

@@ -28,7 +28,14 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
         <Flex direction="column" gap="4">
           <Text size="2">Add or remove labels to help others find your content.</Text>
 
-          <Select options={tags} value={selectedTags} onChange={setSelectedTags} />
+          <Select
+            // isMulti
+            options={tags} 
+            value={selectedTags} 
+            onChange={setSelectedTags}
+            name="tags"
+            placeholder='Add label'
+          />
 
           <Flex justify="end">
             <Button color="blue" onClick={onClose}>
