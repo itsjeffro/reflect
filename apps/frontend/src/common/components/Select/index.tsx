@@ -18,7 +18,7 @@ interface SelectProps {
   onInputChange?: (value: string) => void;
   onChange?: (value: Option[]) => void;
   multiselect?: boolean;
-  container?: Element | DocumentFragment | null;
+  container?: HTMLDivElement | null;
   isMulti?: boolean;
 }
 
@@ -28,7 +28,8 @@ export const Select = forwardRef((
     value, 
     placeholder, 
     onInputChange, 
-    onChange, 
+    onChange,
+    container,
     isMulti = false, 
     options = [], 
     disabled = false,
@@ -271,7 +272,7 @@ export const Select = forwardRef((
         </Close>
       </BaseAutocomplete>
 
-      <Portal>
+      <Portal {...(container && { container })}>
         {isOpen && (
           <Dropdown
             ref={mergeRefs([refs.setFloating, listRef])}
