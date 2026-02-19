@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { useNavigate } from "react-router";
 import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Box, Button, Card, Checkbox, Flex, Heading, Text } from "@radix-ui/themes";
 import { TextField } from '../common/components/TextField';
 import { useLogin } from '../common/hooks/useLogin';
@@ -25,7 +25,7 @@ function Login() {
 
   const navigate = useNavigate();
 
-  const { handleSubmit, register } = useForm({
+  const { handleSubmit, register, control } = useForm({
     defaultValues: initialData
   });
 
@@ -90,9 +90,19 @@ function Login() {
             />
           </Box>
 
-          <Flex align="center" gap="2" mb="1">
-            <Checkbox {...register('remember')} id="remember" /> <label htmlFor="remember">Remember me</label>
-          </Flex>
+          {!window.store && (
+            <Flex align="center" gap="2" mb="1">
+              <Controller 
+                control={control}
+                name="remember"
+                render={({ field }) => (
+                  <>
+                    <Checkbox name="remember" id="remember" checked={field.value} onCheckedChange={field.onChange} /> <label htmlFor="remember">Remember me</label>
+                  </>
+                )} 
+              />
+            </Flex>
+          )}
 
           <Flex mt="3" justify="end" gap="3">
             <Button type="submit">Sign in</Button>
