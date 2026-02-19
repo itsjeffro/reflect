@@ -17,12 +17,15 @@ import { IconPlus, IconTag, IconTrash } from "@tabler/icons-react";
 import { useDeleteEntryById } from "../common/api/deleteEntryById";
 import { useCreateEntry } from "../common/api/createEntry";
 import { TagModal } from "../common/components/TagModal";
+import { Modal } from "../common/components/Modal";
+import { useUpdateEntryTags } from "../common/api/updateEntryTags";
 
 export const List = () => {
   const editorRef = useRef<MDXEditorMethods | null>(null);
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -44,6 +47,7 @@ export const List = () => {
     await queryClient.invalidateQueries({ queryKey: ['entries'] });
 
     setSelectedId(null);
+    setIsConfirmModalOpen(false);
   }, [formUpdate, queryClient]);
 
   const handleSuccessCreate = useCallback(async (data: EntryModel) => {
@@ -71,6 +75,10 @@ export const List = () => {
     onError: (error) => alert(JSON.stringify(error)),
   });
 
+  const { mutate: updateEntryTags } = useUpdateEntryTags({
+    onError: (error) => alert(JSON.stringify(error)),
+  })
+
   const entries = useMemo(() => {
     if (!data) {
       return [];
@@ -82,8 +90,18 @@ export const List = () => {
     return selectedId ?? entries?.[0]?.id;
   }, [selectedId, entries]);
 
+  const entryTags = useMemo(() => {
+    const entry = entries.find(entry => entry.id === entryId);
+
+    if (!entry) {
+      return [];
+    }
+
+    return entry.tags.map((tag) => tag.slug.en);
+  }, [entryId, entries]);
+
   const handleDeleteClick = useCallback(() => {
-    deleteEntry({ id: entryId })
+    deleteEntry({ id: entryId });
   }, [entryId, deleteEntry]);
 
   useEffect(() => {
@@ -132,6 +150,10 @@ export const List = () => {
   const handleOpenTagModalClick = useCallback(() => {
     setIsTagModalOpen(true)
   }, []);
+
+  const handleTagChange = useCallback((tags: string[]) => {
+    updateEntryTags({ id: entryId, payload: { tags } });
+  }, [entryId, updateEntryTags]);
 
   useAutoSave({
     form: formUpdate,
@@ -207,17 +229,39 @@ export const List = () => {
             </EmptyPlaceholder>
           </Content>
 
+          {entryTags.length > 0 && (
+            <Tags>
+              <Text size="2">Tags:</Text>
+              {entryTags.map((entryTag) => (
+                <Tag>{entryTag}</Tag>
+              ))}
+            </Tags>
+          )}
+
           <EditorOptions>
             <EditorOption onClick={handleOpenTagModalClick}><IconTag size="16" color="var(--text-primary)" /> Add tag</EditorOption>
-            <EditorOption onClick={handleDeleteClick}><IconTrash size="16" color="var(--text-danger)" /> Delete</EditorOption>
+            <EditorOption onClick={() => setIsConfirmModalOpen(true)}><IconTrash size="16" color="var(--text-danger)" /> Delete</EditorOption>
           </EditorOptions>
         </Content>
       </Main>
 
       <TagModal 
-        open={isTagModalOpen} 
+        selectedTags={entryTags}
+        open={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}
-      ></TagModal>
+        onChange={handleTagChange}
+      />
+
+      <Modal
+        open={isConfirmModalOpen}
+        title={`Delete entry #${entryId}`} 
+        actions={[
+          { color: 'gray', label: 'Cancel', onClick: () => setIsConfirmModalOpen(false) },
+          { color: 'red', label: 'Delete', onClick: handleDeleteClick },
+        ]}
+      >
+        <Text size="2">Are you sure you want to delete this entry?</Text>
+      </Modal>
     </>
   )
 }
@@ -268,4 +312,21 @@ const EmptyPlaceholder = styled.div({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+});
+
+const Tags = styled.div({
+  padding: '0 1rem',
+  display: 'flex',
+  gap: '.5rem',
+  alignItems: 'center',
+})
+
+const Tag = styled.div({
+  border: '1px solid var(--border)',
+  borderRadius: '4px',
+  padding: '.2rem .25rem',
+  fontSize: '0.7rem',
+  lineHeight: '1',
+  textTransform: 'uppercase',
+  fontWeight: '500'
 });
