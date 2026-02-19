@@ -5,27 +5,35 @@ import { useCallback, useMemo, useState } from 'react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 
 type TagModalProps = DialogPrimitive.DialogProps & {
+  selectedTags: string[];
   onClose: () => void;
+  onChange?: (tags: string[]) => void;
 };
 
-export const TagModal = ({ onClose, ...props }: TagModalProps) => {
+export const TagModal = ({ selectedTags, onClose, onChange, ...props }: TagModalProps) => {
   const { data } = useGetTags();
 
-  const [selectedTags, setSelectedTags] = useState<Record<string, string>[]>([]);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const tags = useMemo(() => {
     const options = data?.map((tag) => {
-      return { value: tag?.slug.en, label: tag.name?.en };
+      return { value: tag?.slug.en, label: tag?.slug.en };
     }) ?? [];
 
     return options as Record<string, string>[];
   }, [data]);
 
+  const selected = useMemo(() => {
+    return tags.filter((tag) => {
+      return selectedTags?.includes(tag.value);
+    })
+  }, [selectedTags, tags]);
+
   const handleChange = useCallback((options: Option[]) => {
-    console.log(options);
-    setSelectedTags(options);
-  }, []);
+    const tags = options.map(option => option.value);
+
+    onChange?.(tags);
+  }, [onChange]);
 
   return (
     <DialogPrimitive.Root {...props}>
@@ -39,8 +47,9 @@ export const TagModal = ({ onClose, ...props }: TagModalProps) => {
 
             <Select
               isMulti
+              hideSelectedOptions
               options={tags} 
-              value={selectedTags} 
+              value={selected} 
               onChange={handleChange}
               name="tags"
               placeholder='Add label'
