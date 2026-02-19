@@ -21,6 +21,7 @@ interface SelectProps {
   multiselect?: boolean;
   container?: HTMLDivElement | null;
   isMulti?: boolean;
+  hideSelectedOptions?: boolean;
 }
 
 export const Select = forwardRef((
@@ -31,7 +32,8 @@ export const Select = forwardRef((
     onInputChange, 
     onChange,
     container,
-    isMulti = false, 
+    isMulti = false,
+    hideSelectedOptions = false,
     options = [], 
     disabled = false,
   }: SelectProps
@@ -45,19 +47,29 @@ export const Select = forwardRef((
   const focusedOptionRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (selected !== value) {
+      onChange?.(selected ?? []);
+    }
+  }, [onChange, selected, value]);
+
+  const selectedOptions = useMemo(() => {
+    return selected?.flatMap((option) => option.value);
+  }, [selected])
+
   const filteredOptions = useMemo(() => {
     const inputValue = input?.toLowerCase();
 
     return options.filter((option) => {
       const isSelected = option.label.toLowerCase().includes(inputValue);
 
+      if (isSelected && hideSelectedOptions) {
+        return !selectedOptions?.includes(option.value);
+      }
+
       return isSelected;
     })
-  }, [options, input]);
-
-  const selectedOptions = useMemo(() => {
-    return selected?.flatMap((option) => option.value);
-  }, [selected])
+  }, [options, input, selectedOptions, hideSelectedOptions]);
 
   const { refs, floatingStyles } = useFloating({
     whileElementsMounted: autoUpdate,
@@ -225,10 +237,6 @@ export const Select = forwardRef((
       return newSelected;
     });
   }, [setSelected]);
-
-  useEffect(() => {
-    onChange?.(selected ?? []);
-  }, [onChange, selected]);
 
   return (
     <>
