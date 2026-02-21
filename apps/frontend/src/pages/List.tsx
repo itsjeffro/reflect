@@ -29,7 +29,7 @@ export const List = () => {
 
   const queryClient = useQueryClient();
 
-  const { data, isPending: isEntriesPending } = useGetEntries();
+  const { data, isLoading, isPending: isEntriesPending } = useGetEntries();
 
   const formUpdate = useForm<EntryRequest>();
 
@@ -100,36 +100,29 @@ export const List = () => {
     return entry.tags.map((tag) => tag.slug.en);
   }, [entryId, entries]);
 
-  const handleDeleteClick = useCallback(() => {
-    deleteEntry({ id: entryId });
-  }, [entryId, deleteEntry]);
-
-  useEffect(() => {
-    if (!entryId || !entries?.[0]) {
-      return;
-    }
-
-    const { title, published_at, content, updated_at } = entries?.find((entry) => entry.id === entryId) ?? {};
-
-    formUpdate.reset({
-      title: title ?? null,
-      content: content ?? null,
-      published_at: published_at ?? null,
-      updated_at: updated_at ?? null,
-    });
-  }, [entries, formUpdate, entryId]);
-
-  const heading = useMemo(() => {
-    if (!entries?.[0]) {
+  const entry = useMemo(() => {
+    if (!entries) {
       return null;
     }
 
-    const { title, id } = entries?.find((entry) => entry.id === entryId) ?? {};
+    return entries?.find((entry) => entry.id === entryId);
+  }, [entryId, entries])
+
+  const heading = useMemo(() => {
+    if (!entry) {
+      return null;
+    }
+
+    const { title, id } = entry ?? {};
 
     return title ?? `Entry #${id}`
-  }, [entries, entryId]);
+  }, [entry]);
 
   const updatedAt = useWatch({ control: formUpdate.control, name: 'updated_at' });
+
+  const handleDeleteClick = useCallback(() => {
+    deleteEntry({ id: entryId });
+  }, [entryId, deleteEntry]);
 
   const handleUpdate = useCallback((data: EntryRequest) => {
     const { title, content, published_at } = data;
@@ -155,6 +148,35 @@ export const List = () => {
     updateEntryTags({ id: entryId, payload: { tags } });
   }, [entryId, updateEntryTags]);
 
+  const handleSelectEntryClick = useCallback((entryId: number) => {
+    const { content } = entries?.find((entry) => entry.id === entryId) ?? {};
+
+    setSelectedId(entryId);
+
+    editorRef.current?.setMarkdown(content ?? '');
+  }, [entries]);
+
+  useEffect(() => {
+    if (!entryId || !entry) {
+      return;
+    }
+
+    const { title, published_at, content, updated_at } = entry ?? {};
+
+    formUpdate.reset({
+      title: title ?? null,
+      content: content ?? null,
+      published_at: published_at ?? null,
+      updated_at: updated_at ?? null,
+    });
+  }, [entry, formUpdate, entryId]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      editorRef.current?.setMarkdown(formUpdate.getValues('content') ?? '');
+    }
+  }, [isLoading, formUpdate]);
+
   useAutoSave({
     form: formUpdate,
     onSave: handleUpdate,
@@ -175,7 +197,7 @@ export const List = () => {
             </ListHeading>
 
             {entries?.map((entry) => (
-              <ListItem onClick={() => setSelectedId(entry.id)} selected={entryId === entry.id}>
+              <ListItem onClick={() => handleSelectEntryClick(entry.id)} selected={entryId === entry.id}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <Text size="2" weight="medium">
                     {entry?.title ?? `Entry #${entry.id}`}
