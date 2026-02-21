@@ -9,6 +9,6 @@ export const useGetTags = () => {
 
   return useQuery<Response, Error>({
     queryKey: ['tags'],
-    queryFn: () => httpClient.get('/api/tags').then(response => response.data)
+    queryFn: () => httpClient.get('/api/tags?type=entry-tag').then(response => response.data)
   });
 };
